@@ -15,6 +15,11 @@ public class AuthController(IConfiguration config) : ControllerBase, IAuthContro
     private readonly AuthHelper _authHelper = new(config);
     public IActionResult Register(UserForRegistrationDTO user)
     {
+        if (user.Password != user.PasswordConfirmation)
+        {
+            return BadRequest("Passwords do not match");
+        }
+        
         throw new NotImplementedException();
     }
     public IActionResult LogIn(UserForLoginDTO user)
