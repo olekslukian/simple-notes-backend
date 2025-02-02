@@ -10,3 +10,4 @@ BEGIN
     SELECT [Email] FROM NotesAppSchema.Auth 
         WHERE Email = @Email
 END
+GO

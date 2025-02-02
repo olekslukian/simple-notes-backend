@@ -4,6 +4,8 @@ using Microsoft.Data.SqlClient;
 
 namespace SimpleNotesApp.Data;
 
+// TODO(olekslukian): Refactor to work with stored procedures, wrap in repository
+
 public class DbContext(IConfiguration config)
 {
     private readonly IConfiguration _config = config;
