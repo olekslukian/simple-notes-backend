@@ -13,13 +13,15 @@ public class AuthHelper(IConfiguration config)
 
     public byte[] GetPasswordHash(string password, byte[] passwordSalt)
     {
-        string passwordSaltWithString = _config
-        .GetSection("AppSettings:PasswordKey")
-        .Value + Convert.ToBase64String(passwordSalt);
+        string passwordKey = _config.GetSection("AppSettings:PasswordKey").Value ?? "";
+
+        using var hmac = new System.Security.Cryptography.HMACSHA256(Encoding.UTF8.GetBytes(passwordKey));
+
+        byte[] combinedSalt = hmac.ComputeHash(passwordSalt);
 
         return KeyDerivation.Pbkdf2(
             password: password,
-            salt: Encoding.ASCII.GetBytes(passwordSaltWithString),
+            salt: combinedSalt,
             prf: KeyDerivationPrf.HMACSHA256,
             iterationCount: 100000,
             numBytesRequested: 256 / 8

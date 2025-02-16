@@ -28,55 +28,84 @@ public class AuthController(IConfiguration config) : ControllerBase, IAuthContro
             return BadRequest("Passwords do not match");
         }
 
-        string sqlCheckUserExists = @$"EXEC {StoredProceduresConstants.CHECK_USER} @Email={user.Email}";
+        IEnumerable<string> existingUsers = _db.LoadData<string>(SPConstants.CHECK_USER, new { Email = user.Email });
 
-        IEnumerable<string> existingUsers = _db.LoadData<string>(sqlCheckUserExists);
-
-        if (existingUsers.IsNullOrEmpty())
+        if (!existingUsers.IsNullOrEmpty())
         {
-            byte[] passwordSalt = new byte[128 / 8];
-
-            using RandomNumberGenerator rng = RandomNumberGenerator.Create();
-            rng.GetNonZeroBytes(passwordSalt);
-
-            byte[] passwordHash = _authHelper.GetPasswordHash(user.Password, passwordSalt);
-
-
-            //  TODO(olekslukian): Figure out how to use correctly stored procedures with parameters
-
-            string registrationUpsertSql = @"EXEC NotesAppSchema.spRegistration_Upsert @Email=" + user.Email;
-
-            List<SqlParameter> parameters = [];
-
-            SqlParameter passwordHashParameter = new("@PasswordHash", SqlDbType.VarBinary)
-            {
-                Value = passwordHash
-            };
-
-            SqlParameter passwordSaltParameter = new("@PasswordSalt", SqlDbType.VarBinary)
-            {
-                Value = passwordSalt
-            };
-
-            parameters.Add(passwordHashParameter);
-            parameters.Add(passwordSaltParameter);
-
-
-            if (_db.ExecuteSqlWithParameters(registrationUpsertSql, parameters))
-            {
-                return Ok();
-            }
-
-            throw new Exception("Failed to register user");
+            return Conflict("User already exists.");
         }
 
-        throw new Exception("This user already exists");
+        byte[] passwordSalt = new byte[16];
+
+        using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
+        {
+            rng.GetNonZeroBytes(passwordSalt);
+        }
+
+        byte[] passwordHash = _authHelper.GetPasswordHash(user.Password, passwordSalt);
+
+        var registrationParams = new
+        {
+            Email = user.Email,
+            PasswordHash = passwordHash,
+            PasswordSalt = passwordSalt
+        };
+
+        bool isRegistered = _db.ExecuteSql(SPConstants.REGISTRATION_UPSERT, registrationParams);
+
+        if (isRegistered)
+        {
+            return Ok(new { Message = "User registered successfully." });
+        }
+
+        return StatusCode(500, "Failed to register user.");
 
     }
+
+    [AllowAnonymous]
     [HttpPost("Login")]
     public IActionResult LogIn(UserForLoginDTO user)
     {
-        throw new NotImplementedException();
+        // TODO(olekslukian): Fix hash check
+
+        var emailParam = new { Email = user.Email };
+
+        UserForLoginConfirmationDTO? userForConfirmation = _db.LoadDataSingle<UserForLoginConfirmationDTO>(SPConstants.CHECK_USER, emailParam);
+
+        if (userForConfirmation == null)
+        {
+            return Unauthorized("User does not exist.");
+        }
+
+        if (userForConfirmation.PasswordSalt == null || userForConfirmation.PasswordHash == null)
+        {
+            return StatusCode(500, "User credentials are incomplete.");
+        }
+
+        byte[] passwordHash = _authHelper.GetPasswordHash(user.Password, userForConfirmation.PasswordSalt);
+
+        if (passwordHash.Length != userForConfirmation.PasswordHash.Length)
+        {
+            return StatusCode(500, "Stored password hash is corrupted.");
+        }
+
+        bool isPasswordValid = true;
+        for (int i = 0; i < passwordHash.Length; i++)
+        {
+            if (passwordHash[i] != userForConfirmation.PasswordHash[i])
+            {
+                isPasswordValid = false;
+            }
+        }
+
+        if (!isPasswordValid)
+        {
+            return Unauthorized("Invalid password.");
+        }
+
+        int userId = _db.LoadDataSingle<int>(SPConstants.USERID_GET, emailParam);
+
+        return Ok(new Dictionary<string, string> { { "token", _authHelper.CreateToken(userId) } });
     }
 
     [HttpGet("RefreshToken")]
