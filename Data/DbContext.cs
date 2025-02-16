@@ -4,53 +4,30 @@ using Microsoft.Data.SqlClient;
 
 namespace SimpleNotesApp.Data;
 
+
 public class DbContext(IConfiguration config)
 {
     private readonly IConfiguration _config = config;
 
-    public IEnumerable<T> LoadData<T>(string sql)
+    public IEnumerable<T> LoadData<T>(string procedure, object? parameters = null)
     {
         string? connectionString = _config.GetConnectionString("DefaultConnection");
-
-        IDbConnection dbConnection = new SqlConnection(connectionString);
-
-        return dbConnection.Query<T>(sql);
+        using IDbConnection dbConnection = new SqlConnection(connectionString);
+        return dbConnection.Query<T>(procedure, parameters, commandType: CommandType.StoredProcedure);
     }
 
-    public T LoadDataSingle<T>(string sql)
+    public T LoadDataSingle<T>(string procedure, object? parameters = null)
     {
         string? connectionString = _config.GetConnectionString("DefaultConnection");
-
-        IDbConnection dbConnection = new SqlConnection(connectionString);
-
-        return dbConnection.QuerySingle<T>(sql);
+        using IDbConnection dbConnection = new SqlConnection(connectionString);
+        return dbConnection.QuerySingle<T>(procedure, parameters, commandType: CommandType.StoredProcedure);
     }
 
-    public bool ExecuteSql(string sql)
+    public bool ExecuteSql(string procedure, object? parameters = null)
     {
         string? connectionString = _config.GetConnectionString("DefaultConnection");
-
-        IDbConnection dbConnection = new SqlConnection(connectionString);
-
-        return dbConnection.Execute(sql) > 0;
+        using IDbConnection dbConnection = new SqlConnection(connectionString);
+        return dbConnection.Execute(procedure, parameters, commandType: CommandType.StoredProcedure) > 0;
     }
 
-    public bool ExecuteSqlWithParameters(string sql, List<SqlParameter> sqlParameters)
-    {
-        string? connectionString = _config.GetConnectionString("DefaultConnection");
-        SqlConnection dbConnection = new(connectionString);
-        SqlCommand commandWithParams = new(sql);
-
-        foreach (SqlParameter parameter in sqlParameters)
-        {
-            commandWithParams.Parameters.Add(parameter);
-        }
-
-        dbConnection.Open();
-        commandWithParams.Connection = dbConnection;
-        int rowsAffected = commandWithParams.ExecuteNonQuery();
-        dbConnection.Close();
-
-        return rowsAffected > 0;
-    }
 }
