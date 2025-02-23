@@ -1,8 +1,6 @@
-using System.Data;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using SimpleNotesApp.Constants;
 using SimpleNotesApp.Data;
@@ -13,7 +11,7 @@ namespace SimpleNotesApp.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("controller")]
+[Route("Auth")]
 public class AuthController(IConfiguration config) : ControllerBase, IAuthController
 {
     private readonly DbContext _db = new(config);
@@ -66,11 +64,10 @@ public class AuthController(IConfiguration config) : ControllerBase, IAuthContro
     [HttpPost("Login")]
     public IActionResult LogIn(UserForLoginDTO user)
     {
-        // TODO(olekslukian): Fix hash check
 
         var emailParam = new { Email = user.Email };
 
-        UserForLoginConfirmationDTO? userForConfirmation = _db.LoadDataSingle<UserForLoginConfirmationDTO>(SPConstants.CHECK_USER, emailParam);
+        UserForLoginConfirmationDTO? userForConfirmation = _db.LoadDataSingle<UserForLoginConfirmationDTO>(SPConstants.USER_AUTH_CONFIRMATION, emailParam);
 
         if (userForConfirmation == null)
         {
@@ -86,7 +83,7 @@ public class AuthController(IConfiguration config) : ControllerBase, IAuthContro
 
         if (passwordHash.Length != userForConfirmation.PasswordHash.Length)
         {
-            return StatusCode(500, "Stored password hash is corrupted.");
+            return StatusCode(500, "Stored password is corrupted.");
         }
 
         bool isPasswordValid = true;
@@ -111,6 +108,12 @@ public class AuthController(IConfiguration config) : ControllerBase, IAuthContro
     [HttpGet("RefreshToken")]
     public IActionResult RefreshToken()
     {
-        throw new NotImplementedException();
+        string userId = User.FindFirst("userId")?.Value ?? "";
+
+        var userIdParam = new { UserId = userId };
+
+        int userIdFromDb = _db.LoadDataSingle<int>(SPConstants.USERID_GET, userIdParam);
+
+        return Ok(new Dictionary<string, string> { { "token", _authHelper.CreateToken(userIdFromDb) } });
     }
 }
