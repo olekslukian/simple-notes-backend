@@ -11,7 +11,7 @@ namespace SimpleNotesApp.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("controller")]
+[Route("Auth")]
 public class AuthController(IConfiguration config) : ControllerBase, IAuthController
 {
     private readonly DbContext _db = new(config);
@@ -108,6 +108,12 @@ public class AuthController(IConfiguration config) : ControllerBase, IAuthContro
     [HttpGet("RefreshToken")]
     public IActionResult RefreshToken()
     {
-        throw new NotImplementedException();
+        string userId = User.FindFirst("userId")?.Value ?? "";
+
+        var userIdParam = new { UserId = userId };
+
+        int userIdFromDb = _db.LoadDataSingle<int>(SPConstants.USERID_GET, userIdParam);
+
+        return Ok(new Dictionary<string, string> { { "token", _authHelper.CreateToken(userIdFromDb) } });
     }
 }
