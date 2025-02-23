@@ -1,8 +1,6 @@
-using System.Data;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using SimpleNotesApp.Constants;
 using SimpleNotesApp.Data;
@@ -66,11 +64,10 @@ public class AuthController(IConfiguration config) : ControllerBase, IAuthContro
     [HttpPost("Login")]
     public IActionResult LogIn(UserForLoginDTO user)
     {
-        // TODO(olekslukian): Fix hash check
 
         var emailParam = new { Email = user.Email };
 
-        UserForLoginConfirmationDTO? userForConfirmation = _db.LoadDataSingle<UserForLoginConfirmationDTO>(SPConstants.CHECK_USER, emailParam);
+        UserForLoginConfirmationDTO? userForConfirmation = _db.LoadDataSingle<UserForLoginConfirmationDTO>(SPConstants.USER_AUTH_CONFIRMATION, emailParam);
 
         if (userForConfirmation == null)
         {
@@ -86,7 +83,7 @@ public class AuthController(IConfiguration config) : ControllerBase, IAuthContro
 
         if (passwordHash.Length != userForConfirmation.PasswordHash.Length)
         {
-            return StatusCode(500, "Stored password hash is corrupted.");
+            return StatusCode(500, "Stored password is corrupted.");
         }
 
         bool isPasswordValid = true;
