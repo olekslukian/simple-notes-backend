@@ -1,9 +1,11 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using SimpleNotesApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddTransient<IAuthService, AuthService>();
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -35,6 +37,8 @@ SymmetricSecurityKey tokenKey = new(Encoding.UTF8.GetBytes(tokenKeyString));
 
 TokenValidationParameters tokenValidationParameters = new()
 {
+    // TODO(olekslukian) : Remove ClockSkew after refresh token tests
+    ClockSkew = TimeSpan.Zero,
     IssuerSigningKey = tokenKey,
     ValidateIssuer = false,
     ValidateIssuerSigningKey = false,

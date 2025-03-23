@@ -7,8 +7,8 @@ public partial class UserForRegistrationDTO
 
     public UserForRegistrationDTO()
     {
-        Email ??= "";
-        Password ??= "";
-        PasswordConfirmation ??= "";
+        Email ??= string.Empty;
+        Password ??= string.Empty;
+        PasswordConfirmation ??= string.Empty;
     }
 }
