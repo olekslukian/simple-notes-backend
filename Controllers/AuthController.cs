@@ -1,119 +1,57 @@
-using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using SimpleNotesApp.Constants;
-using SimpleNotesApp.Data;
 using SimpleNotesApp.DTO;
-using SimpleNotesApp.Helpers;
-
+using SimpleNotesApp.Services;
 namespace SimpleNotesApp.Controllers;
 
 [Authorize]
 [ApiController]
 [Route("Auth")]
-public class AuthController(IConfiguration config) : ControllerBase, IAuthController
+public class AuthController(IAuthService authService) : ControllerBase, IAuthController
 {
-    private readonly DbContext _db = new(config);
-    private readonly AuthHelper _authHelper = new(config);
+    private readonly IAuthService _authService = authService;
 
     [AllowAnonymous]
     [HttpPost("Register")]
     public IActionResult Register(UserForRegistrationDTO user)
     {
-        if (user.Password != user.PasswordConfirmation)
-        {
-            return BadRequest("Passwords do not match");
-        }
+        var result = _authService.Register(user);
 
-        IEnumerable<string> existingUsers = _db.LoadData<string>(SPConstants.CHECK_USER, new { Email = user.Email });
-
-        if (!existingUsers.IsNullOrEmpty())
-        {
-            return Conflict("User already exists.");
-        }
-
-        byte[] passwordSalt = new byte[16];
-
-        using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
-        {
-            rng.GetNonZeroBytes(passwordSalt);
-        }
-
-        byte[] passwordHash = _authHelper.GetPasswordHash(user.Password, passwordSalt);
-
-        var registrationParams = new
-        {
-            Email = user.Email,
-            PasswordHash = passwordHash,
-            PasswordSalt = passwordSalt
-        };
-
-        bool isRegistered = _db.ExecuteSql(SPConstants.REGISTRATION_UPSERT, registrationParams);
-
-        if (isRegistered)
-        {
-            return Ok(new { Message = "User registered successfully." });
-        }
-
-        return StatusCode(500, "Failed to register user.");
-
+        return result.When(
+            onSuccess: _ => Ok("User registered successfully"),
+            onFailure: BadRequest
+        );
     }
 
     [AllowAnonymous]
     [HttpPost("Login")]
     public IActionResult LogIn(UserForLoginDTO user)
     {
+        var result = _authService.Login(user);
 
-        var emailParam = new { Email = user.Email };
-
-        UserForLoginConfirmationDTO? userForConfirmation = _db.LoadDataSingle<UserForLoginConfirmationDTO>(SPConstants.USER_AUTH_CONFIRMATION, emailParam);
-
-        if (userForConfirmation == null)
-        {
-            return Unauthorized("User does not exist.");
-        }
-
-        if (userForConfirmation.PasswordSalt == null || userForConfirmation.PasswordHash == null)
-        {
-            return StatusCode(500, "User credentials are incomplete.");
-        }
-
-        byte[] passwordHash = _authHelper.GetPasswordHash(user.Password, userForConfirmation.PasswordSalt);
-
-        if (passwordHash.Length != userForConfirmation.PasswordHash.Length)
-        {
-            return StatusCode(500, "Stored password is corrupted.");
-        }
-
-        bool isPasswordValid = true;
-        for (int i = 0; i < passwordHash.Length; i++)
-        {
-            if (passwordHash[i] != userForConfirmation.PasswordHash[i])
-            {
-                isPasswordValid = false;
-            }
-        }
-
-        if (!isPasswordValid)
-        {
-            return Unauthorized("Invalid password.");
-        }
-
-        int userId = _db.LoadDataSingle<int>(SPConstants.USERID_GET, emailParam);
-
-        return Ok(new Dictionary<string, string> { { "token", _authHelper.CreateToken(userId) } });
+        return result.When(
+            onSuccess: Ok,
+            onFailure: Unauthorized
+        );
     }
 
+    [AllowAnonymous]
     [HttpGet("RefreshToken")]
-    public IActionResult RefreshToken()
+    public IActionResult RefreshToken(string refreshToken)
     {
-        string userId = User.FindFirst("userId")?.Value ?? "";
 
-        var userIdParam = new { UserId = userId };
+        var result = _authService.RefreshToken(refreshToken);
 
-        int userIdFromDb = _db.LoadDataSingle<int>(SPConstants.USERID_GET, userIdParam);
+        return result.When(
+            onSuccess: Ok,
+            onFailure: Unauthorized
+        );
+    }
 
-        return Ok(new Dictionary<string, string> { { "token", _authHelper.CreateToken(userIdFromDb) } });
+    [HttpGet("TestAuth")]
+    public IActionResult TestAuth()
+    {
+        return Ok("Worked successfully");
     }
 }

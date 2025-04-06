@@ -2,7 +2,7 @@ using System.Data;
 using Dapper;
 using Microsoft.Data.SqlClient;
 
-namespace SimpleNotesApp.Data;
+namespace SimpleNotesApp.Context;
 
 
 public class DbContext(IConfiguration config)
@@ -16,11 +16,11 @@ public class DbContext(IConfiguration config)
         return dbConnection.Query<T>(procedure, parameters, commandType: CommandType.StoredProcedure);
     }
 
-    public T LoadDataSingle<T>(string procedure, object? parameters = null)
+    public T? LoadDataSingle<T>(string procedure, object? parameters = null)
     {
         string? connectionString = _config.GetConnectionString("DefaultConnection");
         using IDbConnection dbConnection = new SqlConnection(connectionString);
-        return dbConnection.QuerySingle<T>(procedure, parameters, commandType: CommandType.StoredProcedure);
+        return dbConnection.QuerySingleOrDefault<T>(procedure, parameters, commandType: CommandType.StoredProcedure);
     }
 
     public bool ExecuteSql(string procedure, object? parameters = null)

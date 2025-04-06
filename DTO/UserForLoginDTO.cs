@@ -6,7 +6,7 @@ public partial class UserForLoginDTO
 
     public UserForLoginDTO()
     {
-        Email ??= "";
-        Password ??= "";
+        Email ??= string.Empty;
+        Password ??= string.Empty;
     }
 }

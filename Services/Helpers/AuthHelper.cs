@@ -1,10 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.IdentityModel.Tokens;
 
-namespace SimpleNotesApp.Helpers;
+namespace SimpleNotesApp.Services.Helpers;
 
 
 public class AuthHelper(IConfiguration config)
@@ -40,7 +41,8 @@ public class AuthHelper(IConfiguration config)
         SecurityTokenDescriptor descriptor = new()
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.Now.AddDays(1),
+            // TODO(olekslukian): After tests, change expiration date to 1 hour
+            Expires = DateTime.Now.AddSeconds(30),
             SigningCredentials = credentials
         };
 
@@ -48,5 +50,23 @@ public class AuthHelper(IConfiguration config)
         SecurityToken token = tokenHandler.CreateToken(descriptor);
 
         return tokenHandler.WriteToken(token);
+    }
+
+    public string CreateRefreshToken()
+    {
+
+        var randomNumber = new byte[64];
+
+        using (var numberGenerator = RandomNumberGenerator.Create())
+        {
+            numberGenerator.GetBytes(randomNumber);
+        }
+
+        string base64Url = Convert.ToBase64String(randomNumber)
+            .Replace("+", "-")
+            .Replace("/", "_")
+            .Replace("=", string.Empty);
+
+        return base64Url;
     }
 }
