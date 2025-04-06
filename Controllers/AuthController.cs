@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using SimpleNotesApp.DTO;
 using SimpleNotesApp.Services;
 namespace SimpleNotesApp.Controllers;
@@ -39,9 +40,8 @@ public class AuthController(IAuthService authService) : ControllerBase, IAuthCon
     [HttpGet("RefreshToken")]
     public IActionResult RefreshToken(string refreshToken)
     {
-        string userId = User.FindFirst("userId")?.Value ?? "";
 
-        var result = _authService.RefreshToken(userId, refreshToken);
+        var result = _authService.RefreshToken(refreshToken);
 
         return result.When(
             onSuccess: Ok,

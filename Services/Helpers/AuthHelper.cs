@@ -54,6 +54,7 @@ public class AuthHelper(IConfiguration config)
 
     public string CreateRefreshToken()
     {
+
         var randomNumber = new byte[64];
 
         using (var numberGenerator = RandomNumberGenerator.Create())
@@ -61,7 +62,11 @@ public class AuthHelper(IConfiguration config)
             numberGenerator.GetBytes(randomNumber);
         }
 
-        return Convert.ToBase64String(randomNumber);
+        string base64Url = Convert.ToBase64String(randomNumber)
+            .Replace("+", "-")
+            .Replace("/", "_")
+            .Replace("=", string.Empty);
 
+        return base64Url;
     }
 }

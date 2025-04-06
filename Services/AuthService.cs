@@ -55,7 +55,6 @@ public class AuthService(IConfiguration config) : IAuthService
     }
     public ServiceResponse<TokensResponseDTO> Login(UserForLoginDTO user)
     {
-
         var emailParam = new { Email = user.Email };
 
         UserForLoginConfirmationDTO? userForConfirmation = _db.LoadDataSingle<UserForLoginConfirmationDTO>(SPConstants.USER_AUTH_CONFIRMATION, emailParam);
@@ -102,6 +101,32 @@ public class AuthService(IConfiguration config) : IAuthService
 
         return ServiceResponse<TokensResponseDTO>.Success(new(accessToken: _authHelper.CreateToken(userId), refreshToken: refreshToken));
     }
+    public ServiceResponse<TokensResponseDTO> RefreshToken(string refreshToken)
+    {
+        var tokenParam = new { RefreshToken = refreshToken };
+
+        User? userFromDb = _db.LoadDataSingle<User>(SPConstants.GET_USER_BY_REF_TOKEN, tokenParam);
+
+        if (userFromDb == null)
+        {
+            return ServiceResponse<TokensResponseDTO>.Failure("Failed to refresh token");
+        }
+
+        if (refreshToken != userFromDb.RefreshToken)
+        {
+            return ServiceResponse<TokensResponseDTO>.Failure("Refresh token is invalid");
+        }
+
+        if (userFromDb.RefreshTokenExpires.CompareTo(DateTime.UtcNow) < 0)
+        {
+            return ServiceResponse<TokensResponseDTO>.Failure("Refresh token is expired");
+        }
+
+        string newAccessToken = _authHelper.CreateToken(userFromDb.UserId);
+        string newRefreshToken = CreateAndSaveRefreshToken(userFromDb.UserId);
+
+        return ServiceResponse<TokensResponseDTO>.Success(new(accessToken: newAccessToken, refreshToken: newRefreshToken));
+    }
 
     private string CreateAndSaveRefreshToken(int userId)
     {
@@ -126,30 +151,5 @@ public class AuthService(IConfiguration config) : IAuthService
         return token;
     }
 
-    public ServiceResponse<TokensResponseDTO> RefreshToken(string userId, string refreshToken)
-    {
-        var userIdParam = new { UserId = userId };
 
-        User? userFromDb = _db.LoadDataSingle<User>(SPConstants.GET_USER_BY_ID, userIdParam);
-
-        if (userFromDb == null)
-        {
-            return ServiceResponse<TokensResponseDTO>.Failure("Failed refresh token");
-        }
-
-        if (refreshToken != userFromDb.RefreshToken)
-        {
-            return ServiceResponse<TokensResponseDTO>.Failure("Refresh token is invalid");
-        }
-
-        if (userFromDb.RefreshTokenExpires.CompareTo(DateTime.UtcNow) > 0)
-        {
-            return ServiceResponse<TokensResponseDTO>.Failure("Refresh token is expired");
-        }
-
-        string newAccessToken = _authHelper.CreateToken(userFromDb.UserId);
-        string newRefreshToken = _authHelper.CreateRefreshToken();
-
-        return ServiceResponse<TokensResponseDTO>.Success(new(accessToken: newAccessToken, refreshToken: newRefreshToken));
-    }
 }
