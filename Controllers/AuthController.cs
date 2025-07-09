@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using SimpleNotesApp.DTO;
 using SimpleNotesApp.Services;
 namespace SimpleNotesApp.Controllers;

@@ -16,7 +16,7 @@ public class AuthHelper(IConfiguration config)
     {
         string passwordKey = _config.GetSection("AppSettings:PasswordKey").Value ?? "";
 
-        using var hmac = new System.Security.Cryptography.HMACSHA256(Encoding.UTF8.GetBytes(passwordKey));
+        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(passwordKey));
 
         byte[] combinedSalt = hmac.ComputeHash(passwordSalt);
 
@@ -41,8 +41,7 @@ public class AuthHelper(IConfiguration config)
         SecurityTokenDescriptor descriptor = new()
         {
             Subject = new ClaimsIdentity(claims),
-            // TODO(olekslukian): After tests, change expiration date to 1 hour
-            Expires = DateTime.Now.AddSeconds(30),
+            Expires = DateTime.Now.AddHours(1),
             SigningCredentials = credentials
         };
 
