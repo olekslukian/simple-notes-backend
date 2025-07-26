@@ -1,33 +1,47 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using SimpleNotesApp.Data;
+using SimpleNotesApp.Repositories;
 using SimpleNotesApp.Services;
+using SimpleNotesApp.Services.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddTransient<IAuthService, AuthService>();
+builder.Services.AddScoped<DbContext>();
+builder.Services.AddScoped<IAuthHelper, AuthHelper>();
+builder.Services.AddScoped<INotesRepository, NotesRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<INotesService, NotesService>();
+
 builder.Services.AddControllers();
+
+builder.Services.Configure<RouteOptions>(options =>
+{
+  options.LowercaseUrls = true;
+  options.LowercaseQueryStrings = true;
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors((options) =>
 {
-    options.AddPolicy("DevCors", (corsBuilder) =>
-    {
-        corsBuilder.WithOrigins("http://localhost:4200", "http://localhost:3000", "http://localhost:8000")
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials();
-    });
+  options.AddPolicy("DevCors", (corsBuilder) =>
+  {
+    corsBuilder.WithOrigins("http://localhost:4200", "http://localhost:3000", "http://localhost:8000")
+          .AllowAnyMethod()
+          .AllowAnyHeader()
+          .AllowCredentials();
+  });
 
-    options.AddPolicy("ProdCors", (corsBuilder) =>
-        {
-            corsBuilder.WithOrigins("https://myproductionsite.com")
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials();
-        });
+  options.AddPolicy("ProdCors", (corsBuilder) =>
+      {
+        corsBuilder.WithOrigins("https://myproductionsite.com")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+      });
 });
 
 
@@ -37,31 +51,31 @@ SymmetricSecurityKey tokenKey = new(Encoding.UTF8.GetBytes(tokenKeyString));
 
 TokenValidationParameters tokenValidationParameters = new()
 {
-    // TODO(olekslukian) : Remove ClockSkew after refresh token tests
-    ClockSkew = TimeSpan.Zero,
-    IssuerSigningKey = tokenKey,
-    ValidateIssuer = false,
-    ValidateIssuerSigningKey = false,
-    ValidateAudience = false
+  // ClockSkew needs to be set to Zero if we need to test refresh token with a smaller expiration time
+  // ClockSkew = TimeSpan.Zero,
+  IssuerSigningKey = tokenKey,
+  ValidateIssuer = false,
+  ValidateIssuerSigningKey = false,
+  ValidateAudience = false
 };
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
-    options.TokenValidationParameters = tokenValidationParameters;
+  options.TokenValidationParameters = tokenValidationParameters;
 });
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-    app.UseCors("DevCors");
+  app.UseSwagger();
+  app.UseSwaggerUI();
+  app.UseCors("DevCors");
 }
 else
 {
-    app.UseHttpsRedirection();
-    app.UseCors("ProdCors");
+  app.UseHttpsRedirection();
+  app.UseCors("ProdCors");
 }
 
 app.UseAuthentication();

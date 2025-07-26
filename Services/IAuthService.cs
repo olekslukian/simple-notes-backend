@@ -1,10 +1,11 @@
-using SimpleNotesApp.DTO;
+using SimpleNotesApp.Dto.Auth;
 
 namespace SimpleNotesApp.Services;
 
 public interface IAuthService
 {
-    ServiceResponse<bool> Register(UserForRegistrationDTO user);
-    ServiceResponse<TokensResponseDTO> Login(UserForLoginDTO user);
-    ServiceResponse<TokensResponseDTO> RefreshToken(string refreshToken);
+    ServiceResponse<bool> Register(UserForRegistrationDto user);
+    ServiceResponse<TokensResponseDto> Login(UserForLoginDto user);
+    ServiceResponse<TokensResponseDto> RefreshToken(string refreshToken);
+    ServiceResponse<string> TestAuth(string? userId);
 }
