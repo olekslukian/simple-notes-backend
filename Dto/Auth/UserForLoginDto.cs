@@ -1,10 +1,11 @@
-namespace SimpleNotesApp.DTO;
-public partial class UserForLoginDTO
+namespace SimpleNotesApp.Dto.Auth;
+
+public partial class UserForLoginDto
 {
     public string Email { get; set; }
     public string Password { get; set; }
 
-    public UserForLoginDTO()
+    public UserForLoginDto()
     {
         Email ??= string.Empty;
         Password ??= string.Empty;

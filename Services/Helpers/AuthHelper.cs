@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace SimpleNotesApp.Services.Helpers;
 
 
-public class AuthHelper(IConfiguration config)
+public class AuthHelper(IConfiguration config) : IAuthHelper
 {
     private readonly IConfiguration _config = config;
 
@@ -68,4 +68,5 @@ public class AuthHelper(IConfiguration config)
 
         return base64Url;
     }
+
 }

@@ -1,11 +1,11 @@
-namespace SimpleNotesApp.DTO;
+namespace SimpleNotesApp.Dto.Auth;
 
-public partial class UserForLoginConfirmationDTO
+public partial class UserForLoginConfirmationDto
 {
     public byte[] PasswordHash { get; set; }
     public byte[] PasswordSalt { get; set; }
 
-    public UserForLoginConfirmationDTO()
+    public UserForLoginConfirmationDto()
     {
         PasswordHash = [];
         PasswordSalt = [];
