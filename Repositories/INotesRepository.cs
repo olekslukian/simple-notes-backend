@@ -7,7 +7,7 @@ public interface INotesRepository
 {
   Task<Note?> CreateNoteAsync(CreateNoteRequest request);
   Task<Note?> GetNoteByIdAsync(GetNoteRequest request);
-  Task<IEnumerable<Note>> GetNotesByUserIdAsync(GetNotesByUserRequest request);
+  Task<IEnumerable<Note>> GetNotesByUserIdAsync(string userId);
   Task<Note?> UpdateNoteAsync(UpdateNoteRequest request);
   Task<bool> DeleteNoteAsync(DeleteNoteRequest request);
 }

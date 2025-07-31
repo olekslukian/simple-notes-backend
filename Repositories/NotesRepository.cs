@@ -21,23 +21,48 @@ public class NotesRepository(DbContext db) : INotesRepository
 
     return createdNote;
   }
-  public Task<bool> DeleteNoteAsync(DeleteNoteRequest request)
+  public async Task<bool> DeleteNoteAsync(DeleteNoteRequest request)
   {
-    throw new NotImplementedException();
+    var parameters = new
+    {
+      NoteId = request.NoteId,
+      UserId = request.UserId
+    };
+
+    return await _db.ExecuteAsync(SPConstants.DELETE_NOTE, parameters);
   }
 
   public Task<Note?> GetNoteByIdAsync(GetNoteRequest request)
   {
-    throw new NotImplementedException();
+    var parameters = new
+    {
+      NoteId = request.NoteId,
+      UserId = request.UserId
+    };
+
+    return _db.QuerySingleAsync<Note>(SPConstants.GET_NOTE_BY_ID, parameters);
   }
 
-  public Task<IEnumerable<Note>> GetNotesByUserIdAsync(GetNotesByUserRequest request)
+  public Task<IEnumerable<Note>> GetNotesByUserIdAsync(string userId)
   {
-    throw new NotImplementedException();
+    var parameters = new
+    {
+      UserId = userId
+    };
+
+    return _db.QueryAsync<Note>(SPConstants.GET_NOTES_BY_USER_ID, parameters);
   }
 
-  public Task<Note?> UpdateNoteAsync(UpdateNoteRequest request)
+  public async Task<Note?> UpdateNoteAsync(UpdateNoteRequest request)
   {
-    throw new NotImplementedException();
+    var parameters = new
+    {
+      UserId = request.UserId,
+      NoteId = request.NoteId,
+      Title = request.Title,
+      Body = request.Body
+    };
+
+    return await _db.QuerySingleAsync<Note>(SPConstants.UPDATE_NOTE, parameters);
   }
 }

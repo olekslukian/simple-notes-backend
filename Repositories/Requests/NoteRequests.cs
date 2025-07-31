@@ -9,18 +9,16 @@ public record CreateNoteRequest(
 public record UpdateNoteRequest(
     int NoteId,
     string UserId,
-    string Title,
-    string Body
+    string? Title,
+    string? Body
 );
 
 public record GetNoteRequest(
-    int NoteId
-);
-
-public record GetNotesByUserRequest(
+    int NoteId,
     string UserId
 );
 
 public record DeleteNoteRequest(
-    int NoteId
+    int NoteId,
+    string UserId
 );
