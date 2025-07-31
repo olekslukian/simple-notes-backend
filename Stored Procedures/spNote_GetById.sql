@@ -4,20 +4,20 @@ GO
 
 
 CREATE OR ALTER PROCEDURE NotesAppSchema.spNote_GetById
-    @NoteID INT,
+    @NoteId INT,
     @UserId INT
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT
-        NoteID,
+        NoteId,
         UserId,
         Title,
         Body,
         CreatedAt,
         UpdatedAt
     FROM NotesAppSchema.Notes
-    WHERE NoteID = @NoteID AND UserId = @UserId;
+    WHERE NoteId = @NoteId AND UserId = @UserId;
 END;
 GO

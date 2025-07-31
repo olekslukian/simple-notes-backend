@@ -15,5 +15,5 @@ public abstract class SPConstants
     public const string GET_NOTE_BY_ID = "NotesAppSchema.spNote_GetById";
     public const string UPDATE_NOTE = "NotesAppSchema.spNote_Update";
     public const string DELETE_NOTE = "NotesAppSchema.spNote_Delete";
-    public const string GET_NOTES_BY_USER_ID = "NotesAppSchema.spNote_GetByUserId";
+    public const string GET_NOTES_BY_USER_ID = "NotesAppSchema.spNotes_GetAllByUserId";
 }

@@ -9,7 +9,7 @@ BEGIN
     SET NOCOUNT ON;
 
     SELECT
-        NoteID,
+        NoteId,
         UserId,
         Title,
         Body,
