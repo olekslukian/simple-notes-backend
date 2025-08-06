@@ -3,25 +3,27 @@ using Microsoft.IdentityModel.Tokens;
 using SimpleNotesApp.Data;
 using SimpleNotesApp.Dto.Auth;
 using SimpleNotesApp.Models;
+using SimpleNotesApp.Repositories;
+using SimpleNotesApp.Repositories.Requests;
 using SimpleNotesApp.Services.Helpers;
 
 namespace SimpleNotesApp.Services;
 
-public class AuthService(DbContext db, IAuthHelper authHelper) : IAuthService
+public class AuthService(IAuthRepository repository, IAuthHelper authHelper) : IAuthService
 {
-  private readonly DbContext _db = db;
+  private readonly IAuthRepository _repository = repository;
   private readonly IAuthHelper _authHelper = authHelper;
 
-  public ServiceResponse<bool> Register(UserForRegistrationDto user)
+  public async Task<ServiceResponse<bool>> RegisterUserAsync(UserForRegistrationDto user)
   {
     if (user.Password != user.PasswordConfirmation)
     {
       return ServiceResponse<bool>.Failure("Passwords do not match");
     }
 
-    IEnumerable<string> existingUsers = _db.Query<string>(SPConstants.CHECK_USER, new { Email = user.Email });
+    bool userExists = await _repository.UserExistsAsync(user.Email);
 
-    if (!existingUsers.IsNullOrEmpty())
+    if (userExists)
     {
       return ServiceResponse<bool>.Failure("User already exists");
     }
@@ -35,14 +37,13 @@ public class AuthService(DbContext db, IAuthHelper authHelper) : IAuthService
 
     byte[] passwordHash = _authHelper.GetPasswordHash(user.Password, passwordSalt);
 
-    var registrationParams = new
-    {
-      Email = user.Email,
-      PasswordHash = passwordHash,
-      PasswordSalt = passwordSalt
-    };
+    var request = new RegisterUserRequest(
+      user.Email,
+      passwordHash,
+      passwordSalt
+    );
 
-    bool isRegistered = _db.Execute(SPConstants.REGISTRATION_UPSERT, registrationParams);
+    bool isRegistered = await _repository.RegisterUserAsync(request);
 
     if (isRegistered)
     {
@@ -52,11 +53,9 @@ public class AuthService(DbContext db, IAuthHelper authHelper) : IAuthService
     return ServiceResponse<bool>.Failure("Failed to register user");
 
   }
-  public ServiceResponse<TokensResponseDto> Login(UserForLoginDto user)
+  public async Task<ServiceResponse<TokensResponseDto>> LoginAsync(UserForLoginDto user)
   {
-    var emailParam = new { Email = user.Email };
-
-    UserForLoginConfirmationDto? userForConfirmation = _db.QuerySingle<UserForLoginConfirmationDto>(SPConstants.USER_AUTH_CONFIRMATION, emailParam);
+    UserForLoginConfirmation? userForConfirmation = await _repository.GetUserForLoginAsync(user.Email);
 
     if (userForConfirmation == null)
     {
@@ -70,41 +69,35 @@ public class AuthService(DbContext db, IAuthHelper authHelper) : IAuthService
 
     byte[] passwordHash = _authHelper.GetPasswordHash(user.Password, userForConfirmation.PasswordSalt);
 
-    if (passwordHash.Length != userForConfirmation.PasswordHash.Length)
+    if (!IsPasswordValid(passwordHash, userForConfirmation.PasswordHash))
     {
       return ServiceResponse<TokensResponseDto>.Failure("Email or password is incorrect");
     }
 
-    bool isPasswordValid = true;
-    for (int i = 0; i < passwordHash.Length; i++)
+    int? userId = await _repository.GetUserIdByEmailAsync(user.Email);
+
+    if (userId == null)
     {
-      if (passwordHash[i] != userForConfirmation.PasswordHash[i])
-      {
-        isPasswordValid = false;
-      }
+      return ServiceResponse<TokensResponseDto>.Failure("Something went wrong");
     }
 
-    if (!isPasswordValid)
-    {
-      return ServiceResponse<TokensResponseDto>.Failure("Email or password is incorrect");
-    }
-
-    int userId = _db.QuerySingle<int>(SPConstants.USERID_GET, emailParam);
-
-    string refreshToken = CreateAndSaveRefreshToken(userId);
+    string refreshToken = await CreateAndSaveRefreshTokenAsync(userId.Value);
 
     if (refreshToken.IsNullOrEmpty())
     {
       return ServiceResponse<TokensResponseDto>.Failure("Something went wrong");
     }
 
-    return ServiceResponse<TokensResponseDto>.Success(new(accessToken: _authHelper.CreateToken(userId), refreshToken: refreshToken));
-  }
-  public ServiceResponse<TokensResponseDto> RefreshToken(string refreshToken)
-  {
-    var tokenParam = new { RefreshToken = refreshToken };
+    var tokens = new TokensResponseDto(
+        accessToken: _authHelper.CreateToken(userId.Value),
+        refreshToken: refreshToken
+    );
 
-    User? userFromDb = _db.QuerySingle<User>(SPConstants.GET_USER_BY_REF_TOKEN, tokenParam);
+    return ServiceResponse<TokensResponseDto>.Success(tokens);
+  }
+  public async Task<ServiceResponse<TokensResponseDto>> RefreshTokenAsync(string refreshToken)
+  {
+    var userFromDb = await _repository.GetUserByRefreshTokenAsync(refreshToken);
 
     if (userFromDb == null)
     {
@@ -122,35 +115,23 @@ public class AuthService(DbContext db, IAuthHelper authHelper) : IAuthService
     }
 
     string newAccessToken = _authHelper.CreateToken(userFromDb.UserId);
-    string newRefreshToken = CreateAndSaveRefreshToken(userFromDb.UserId);
+    string newRefreshToken = await CreateAndSaveRefreshTokenAsync(userFromDb.UserId);
 
-    return ServiceResponse<TokensResponseDto>.Success(new(accessToken: newAccessToken, refreshToken: newRefreshToken));
+    var tokens = new TokensResponseDto(accessToken: newAccessToken, refreshToken: newRefreshToken);
+
+    return ServiceResponse<TokensResponseDto>.Success(tokens);
   }
 
-  public ServiceResponse<string> TestAuth(string? userId)
-  {
-    if (string.IsNullOrEmpty(userId))
-    {
-      return ServiceResponse<string>.Failure("User is not authenticated");
-    }
 
-    return ServiceResponse<string>.Success(userId);
-  }
-
-  private string CreateAndSaveRefreshToken(int userId)
+  private async Task<string> CreateAndSaveRefreshTokenAsync(int userId)
   {
     var expirationDate = DateTime.UtcNow.AddDays(7);
 
     var token = _authHelper.CreateRefreshToken();
 
-    var tokenParams = new
-    {
-      UserId = userId,
-      RefreshToken = token,
-      RefreshTokenExpires = expirationDate
-    };
+    var request = new UpdateRefreshTokenRequest(userId, token, expirationDate);
 
-    var result = _db.Execute(SPConstants.REFRESH_TOKEN_UPDATE, tokenParams);
+    var result = await _repository.UpdateRefreshTokenAsync(request);
 
     if (!result)
     {
@@ -160,6 +141,21 @@ public class AuthService(DbContext db, IAuthHelper authHelper) : IAuthService
     return token;
   }
 
+  private static bool IsPasswordValid(byte[] inputHash, byte[] storedHash)
+  {
+    if (inputHash.Length != storedHash.Length)
+    {
+      return false;
+    }
 
+    for (int i = 0; i < inputHash.Length; i++)
+    {
+      if (inputHash[i] != storedHash[i])
+      {
+        return false;
+      }
+    }
 
+    return true;
+  }
 }

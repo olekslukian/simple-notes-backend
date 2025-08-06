@@ -4,8 +4,7 @@ namespace SimpleNotesApp.Services;
 
 public interface IAuthService
 {
-    ServiceResponse<bool> Register(UserForRegistrationDto user);
-    ServiceResponse<TokensResponseDto> Login(UserForLoginDto user);
-    ServiceResponse<TokensResponseDto> RefreshToken(string refreshToken);
-    ServiceResponse<string> TestAuth(string? userId);
+    Task<ServiceResponse<bool>> RegisterUserAsync(UserForRegistrationDto user);
+    Task<ServiceResponse<TokensResponseDto>> LoginAsync(UserForLoginDto user);
+    Task<ServiceResponse<TokensResponseDto>> RefreshTokenAsync(string refreshToken);
 }

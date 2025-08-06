@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<DbContext>();
 builder.Services.AddScoped<IAuthHelper, AuthHelper>();
 builder.Services.AddScoped<INotesRepository, NotesRepository>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<INotesService, NotesService>();
 

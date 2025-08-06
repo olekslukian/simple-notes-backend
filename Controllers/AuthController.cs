@@ -13,9 +13,9 @@ public class AuthController(IAuthService authService) : ControllerBase
 
   [AllowAnonymous]
   [HttpPost("register")]
-  public IActionResult Register(UserForRegistrationDto user)
+  public async Task<IActionResult> Register(UserForRegistrationDto user)
   {
-    var result = _authService.Register(user);
+    var result = await _authService.RegisterUserAsync(user);
 
     return result.When(
         onSuccess: _ => Ok("User registered successfully"),
@@ -25,9 +25,9 @@ public class AuthController(IAuthService authService) : ControllerBase
 
   [AllowAnonymous]
   [HttpPost("login")]
-  public IActionResult LogIn(UserForLoginDto user)
+  public async Task<IActionResult> LogIn(UserForLoginDto user)
   {
-    var result = _authService.Login(user);
+    var result = await _authService.LoginAsync(user);
 
     return result.When(
         onSuccess: Ok,
@@ -37,26 +37,13 @@ public class AuthController(IAuthService authService) : ControllerBase
 
   [AllowAnonymous]
   [HttpGet("refresh-token")]
-  public IActionResult RefreshToken(string refreshToken)
+  public async Task<IActionResult> RefreshToken(string refreshToken)
   {
 
-    var result = _authService.RefreshToken(refreshToken);
+    var result = await _authService.RefreshTokenAsync(refreshToken);
 
     return result.When(
         onSuccess: Ok,
-        onFailure: Unauthorized
-    );
-  }
-
-  [HttpGet("test-auth")]
-  public IActionResult TestAuth()
-  {
-    var userId = User.FindFirst("userId")?.Value;
-
-    var result = _authService.TestAuth(userId);
-
-    return result.When(
-        onSuccess: id => Ok($"Authenticated user ID: {id}"),
         onFailure: Unauthorized
     );
   }
