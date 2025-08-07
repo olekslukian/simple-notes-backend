@@ -1,0 +1,6 @@
+@SimpleNotesApp.API_HostAddress = http://localhost:5004
+
+GET {{SimpleNotesApp.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
