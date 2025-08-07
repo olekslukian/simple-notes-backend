@@ -47,4 +47,17 @@ public class AuthController(IAuthService authService) : ControllerBase
         onFailure: Unauthorized
     );
   }
+
+  [HttpPatch("change-password")]
+  public async Task<IActionResult> ChangePassword(ChangePasswordDto changePasswordDto)
+  {
+    var userId = User.FindFirst("userId")?.Value;
+
+    var result = await _authService.ChangePasswordAsync(userId, changePasswordDto);
+
+    return result.When(
+        onSuccess: _ => Ok("Password changed successfully"),
+        onFailure: BadRequest
+    );
+  }
 }

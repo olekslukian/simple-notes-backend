@@ -10,6 +10,5 @@ BEGIN
     DELETE FROM NotesAppSchema.Notes
     WHERE NoteId = @NoteId AND UserId = @UserId;
 
-    SELECT @@ROWCOUNT AS RowsAffected;
 END;
 GO

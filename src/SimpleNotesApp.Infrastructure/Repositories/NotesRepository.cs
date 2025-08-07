@@ -1,4 +1,3 @@
-using System.Data;
 using SimpleNotesApp.Infrastructure.Data;
 using SimpleNotesApp.Infrastructure.Models;
 using SimpleNotesApp.Infrastructure.Repositories.Requests;
@@ -17,7 +16,7 @@ public class NotesRepository(DbContext db) : INotesRepository
       Body = request.Body
     };
 
-    Note? createdNote = await _db.QuerySingleAsync<Note>(SPConstants.CREATE_NOTE, noteParams);
+    Note? createdNote = await _db.QuerySingleAsync<Note>(SP.CREATE_NOTE, noteParams);
 
     return createdNote;
   }
@@ -29,7 +28,7 @@ public class NotesRepository(DbContext db) : INotesRepository
       UserId = request.UserId
     };
 
-    return await _db.ExecuteAsync(SPConstants.DELETE_NOTE, parameters);
+    return await _db.ExecuteAsync(SP.DELETE_NOTE, parameters);
   }
 
   public Task<Note?> GetNoteByIdAsync(GetNoteRequest request)
@@ -40,7 +39,7 @@ public class NotesRepository(DbContext db) : INotesRepository
       UserId = request.UserId
     };
 
-    return _db.QuerySingleAsync<Note>(SPConstants.GET_NOTE_BY_ID, parameters);
+    return _db.QuerySingleAsync<Note>(SP.GET_NOTE_BY_ID, parameters);
   }
 
   public Task<IEnumerable<Note>> GetNotesByUserIdAsync(string userId)
@@ -50,7 +49,7 @@ public class NotesRepository(DbContext db) : INotesRepository
       UserId = userId
     };
 
-    return _db.QueryAsync<Note>(SPConstants.GET_NOTES_BY_USER_ID, parameters);
+    return _db.QueryAsync<Note>(SP.GET_NOTES_BY_USER_ID, parameters);
   }
 
   public async Task<Note?> UpdateNoteAsync(UpdateNoteRequest request)
@@ -63,6 +62,6 @@ public class NotesRepository(DbContext db) : INotesRepository
       Body = request.Body
     };
 
-    return await _db.QuerySingleAsync<Note>(SPConstants.UPDATE_NOTE, parameters);
+    return await _db.QuerySingleAsync<Note>(SP.UPDATE_NOTE, parameters);
   }
 }

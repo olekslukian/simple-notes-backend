@@ -22,6 +22,7 @@ public sealed class ServiceResponse<T>
   }
 
   public static ServiceResponse<T> Success(T data) => new(data);
+
   public static ServiceResponse<T> Failure(string? errorMessage) => new(errorMessage);
 
   public IActionResult When(Func<T, IActionResult> onSuccess, Func<string, IActionResult> onFailure) => IsSuccess && _data is not null ? onSuccess(_data) : onFailure(_errorMessage ?? "Something went wrong");

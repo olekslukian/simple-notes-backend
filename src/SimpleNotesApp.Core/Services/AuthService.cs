@@ -125,6 +125,63 @@ public class AuthService(IAuthRepository repository, IAuthHelper authHelper) : I
     return ServiceResponse<TokensResponseDto>.Success(tokens);
   }
 
+  public async Task<ServiceResponse<bool>> ChangePasswordAsync(string? userId, ChangePasswordDto changePasswordDto)
+  {
+    if (string.IsNullOrEmpty(userId))
+    {
+      return ServiceResponse<bool>.Failure("User not authorized");
+    }
+
+    UserForPasswordChange? user = await _repository.GetUserForPasswordChangeAsync(userId);
+
+    if (user == null)
+    {
+      return ServiceResponse<bool>.Failure("User not found");
+    }
+
+    if (!IsPasswordValid(
+        _authHelper.GetPasswordHash(changePasswordDto.OldPassword, user.PasswordSalt),
+        user.PasswordHash))
+    {
+      return ServiceResponse<bool>.Failure("Current password is incorrect");
+    }
+
+    if (changePasswordDto.NewPassword == changePasswordDto.OldPassword)
+    {
+      return ServiceResponse<bool>.Failure("New password cannot be the same as the old password");
+    }
+
+    if (changePasswordDto.NewPassword != changePasswordDto.NewPasswordConfirmation)
+    {
+      return ServiceResponse<bool>.Failure("New passwords do not match");
+    }
+
+    byte[] passwordSalt = new byte[16];
+
+    using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
+    {
+      rng.GetNonZeroBytes(passwordSalt);
+    }
+
+    byte[] passwordHash = _authHelper.GetPasswordHash(changePasswordDto.NewPassword, passwordSalt);
+
+    var request = new ChangePasswordRequest(
+      UserId: userId,
+      PasswordHash: passwordHash,
+      PasswordSalt: passwordSalt
+    );
+
+    bool success = await _repository.ChangePasswordAsync(request);
+
+    Console.WriteLine($"Change password result: {success}");
+
+    if (success)
+    {
+      return ServiceResponse<bool>.Success(true);
+    }
+
+    return ServiceResponse<bool>.Failure("Failed to change password");
+  }
 
   private async Task<string> CreateAndSaveRefreshTokenAsync(int userId)
   {

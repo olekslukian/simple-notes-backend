@@ -11,3 +11,9 @@ public record UpdateRefreshTokenRequest(
   string RefreshToken,
   DateTime RefreshTokenExpires
 );
+
+public record ChangePasswordRequest(
+  string UserId,
+  byte[] PasswordHash,
+  byte[] PasswordSalt
+);

@@ -11,4 +11,6 @@ public interface IAuthRepository
   Task<int?> GetUserIdByEmailAsync(string email);
   Task<User?> GetUserByRefreshTokenAsync(string refreshToken);
   Task<bool> UpdateRefreshTokenAsync(UpdateRefreshTokenRequest request);
+  Task<bool> ChangePasswordAsync(ChangePasswordRequest request);
+  Task<UserForPasswordChange?> GetUserForPasswordChangeAsync(string userId);
 }
