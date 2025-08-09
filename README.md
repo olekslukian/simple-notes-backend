@@ -32,7 +32,8 @@ Edit `src/SimpleNotesApp.API/appsettings.json`:
     "DefaultConnection": "Server=localhost;Database=NotesAppDb;Trusted_Connection=true;TrustServerCertificate=true;"
   },
   "AppSettings": {
-    "TokenKey": "your-super-secret-jwt-key-must-be-at-least-32-characters-long"
+    "TokenKey": "your-super-secret-jwt-key-must-be-at-least-32-characters-long",
+    "PasswordKey": "your-super-secret-password-key-must-be-at-least-32-characters-long"
   }
 }
 ```
