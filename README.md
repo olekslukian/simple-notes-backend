@@ -2,6 +2,9 @@
 
 A REST API for a note-taking application built with .NET 8, using JWT authentication and SQL Server.
 
+## Client
+Client is implemented in [Android app](https://github.com/olekslukian/simple-notes-android)
+
 ## Tech Stack
 
 - .NET 8.0 Web API
