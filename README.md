@@ -22,10 +22,6 @@ Client is implemented in [Android app](https://github.com/olekslukian/simple-not
 ### Setup
 
 1. **Clone the repository**
-```bash
-git clone <your-repo-url>
-cd simple-notes-backend
-```
 
 2. **Update connection string**
 Edit `src/SimpleNotesApp.API/appsettings.json`:
