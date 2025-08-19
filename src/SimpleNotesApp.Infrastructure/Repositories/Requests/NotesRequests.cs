@@ -1,24 +1,24 @@
 namespace SimpleNotesApp.Infrastructure.Repositories.Requests;
 
 public record CreateNoteRequest(
-    string UserId,
+    int UserId,
     string Title,
     string Body
 );
 
 public record UpdateNoteRequest(
     int NoteId,
-    string UserId,
+    int UserId,
     string? Title,
     string? Body
 );
 
 public record GetNoteRequest(
     int NoteId,
-    string UserId
+    int UserId
 );
 
 public record DeleteNoteRequest(
     int NoteId,
-    string UserId
+    int UserId
 );

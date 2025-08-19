@@ -125,9 +125,9 @@ public class AuthService(IAuthRepository repository, IAuthHelper authHelper) : I
     return ServiceResponse<TokensResponseDto>.Success(tokens);
   }
 
-  public async Task<ServiceResponse<bool>> ChangePasswordAsync(string? userId, ChangePasswordDto changePasswordDto)
+  public async Task<ServiceResponse<bool>> ChangePasswordAsync(int userId, ChangePasswordDto changePasswordDto)
   {
-    if (string.IsNullOrEmpty(userId))
+    if (userId <= 0)
     {
       return ServiceResponse<bool>.Failure("User not authorized");
     }
