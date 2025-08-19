@@ -13,7 +13,7 @@ public record UpdateRefreshTokenRequest(
 );
 
 public record ChangePasswordRequest(
-  string UserId,
+  int UserId,
   byte[] PasswordHash,
   byte[] PasswordSalt
 );

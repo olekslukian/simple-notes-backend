@@ -5,9 +5,8 @@ using SimpleNotesApp.Core.Services;
 namespace SimpleNotesApp.API.Controllers;
 
 [Authorize]
-[ApiController]
 [Route("api/[controller]")]
-public class AuthController(IAuthService authService) : ControllerBase
+public class AuthController(IAuthService authService) : BaseController
 {
   private readonly IAuthService _authService = authService;
 
@@ -51,7 +50,7 @@ public class AuthController(IAuthService authService) : ControllerBase
   [HttpPatch("change-password")]
   public async Task<IActionResult> ChangePassword(ChangePasswordDto changePasswordDto)
   {
-    var userId = User.FindFirst("userId")?.Value;
+    var userId = GetCurrentUserId();
 
     var result = await _authService.ChangePasswordAsync(userId, changePasswordDto);
 

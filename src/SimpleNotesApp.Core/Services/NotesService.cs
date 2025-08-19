@@ -10,9 +10,9 @@ namespace SimpleNotesApp.Core.Services;
 public class NotesService(INotesRepository repository) : INotesService
 {
   private readonly INotesRepository _repository = repository;
-  public async Task<ServiceResponse<NoteToGetDto>> CreateNoteAsync(string? userId, NoteToCreateDto note)
+  public async Task<ServiceResponse<NoteToGetDto>> CreateNoteAsync(int userId, NoteToCreateDto note)
   {
-    if (string.IsNullOrEmpty(userId))
+    if (userId <= 0)
     {
       return ServiceResponse<NoteToGetDto>.Failure("User not authorized");
     }
@@ -43,9 +43,9 @@ public class NotesService(INotesRepository repository) : INotesService
     return ServiceResponse<NoteToGetDto>.Failure("Failed to create note");
   }
 
-  public async Task<ServiceResponse<bool>> DeleteNoteAsync(string? userId, int noteId)
+  public async Task<ServiceResponse<bool>> DeleteNoteAsync(int userId, int noteId)
   {
-    if (string.IsNullOrEmpty(userId))
+    if (userId <= 0)
     {
       return ServiceResponse<bool>.Failure("User not authorized");
     }
@@ -62,9 +62,9 @@ public class NotesService(INotesRepository repository) : INotesService
     return ServiceResponse<bool>.Success(true);
   }
 
-  public async Task<ServiceResponse<NoteToGetDto>> GetNoteByIdAsync(string? userId, int noteId)
+  public async Task<ServiceResponse<NoteToGetDto>> GetNoteByIdAsync(int userId, int noteId)
   {
-    if (string.IsNullOrEmpty(userId))
+    if (userId <= 0)
     {
       return ServiceResponse<NoteToGetDto>.Failure("User not authorized");
     }
@@ -90,9 +90,9 @@ public class NotesService(INotesRepository repository) : INotesService
     return ServiceResponse<NoteToGetDto>.Success(noteToGetDto);
   }
 
-  public async Task<ServiceResponse<IEnumerable<NoteToGetDto>>> GetNotesAsync(string? userId)
+  public async Task<ServiceResponse<IEnumerable<NoteToGetDto>>> GetNotesAsync(int userId)
   {
-    if (string.IsNullOrEmpty(userId))
+    if (userId <= 0)
     {
       return ServiceResponse<IEnumerable<NoteToGetDto>>.Failure("User not authorized");
     }
@@ -111,9 +111,9 @@ public class NotesService(INotesRepository repository) : INotesService
     return ServiceResponse<IEnumerable<NoteToGetDto>>.Success(notesToGetDto);
   }
 
-  public async Task<ServiceResponse<NoteToGetDto>> UpdateNoteAsync(string? userId, int noteId, NoteToUpdateDto note)
+  public async Task<ServiceResponse<NoteToGetDto>> UpdateNoteAsync(int userId, int noteId, NoteToUpdateDto note)
   {
-    if (string.IsNullOrEmpty(userId))
+    if (userId <= 0)
     {
       return ServiceResponse<NoteToGetDto>.Failure("User not authorized");
     }
