@@ -19,7 +19,7 @@ public class NotesController(INotesService service) : BaseController
 
     return result.When(
         onSuccess: createdNote => Created($"/api/notes/{createdNote.NoteId}", createdNote),
-        onFailure: BadRequest
+        onFailure: Problem
     );
   }
 
@@ -31,7 +31,7 @@ public class NotesController(INotesService service) : BaseController
 
     return result.When(
         onSuccess: _ => Ok(),
-        onFailure: BadRequest
+        onFailure: Problem
     );
   }
 
@@ -43,7 +43,7 @@ public class NotesController(INotesService service) : BaseController
 
     return result.When(
         onSuccess: note => Ok(note),
-        onFailure: BadRequest
+        onFailure: Problem
     );
   }
 
@@ -55,7 +55,7 @@ public class NotesController(INotesService service) : BaseController
 
     return result.When(
         onSuccess: notes => Ok(notes),
-        onFailure: BadRequest
+        onFailure: Problem
     );
   }
 
@@ -67,7 +67,7 @@ public class NotesController(INotesService service) : BaseController
 
     return result.When(
         onSuccess: updatedNote => Ok(updatedNote),
-        onFailure: BadRequest
+        onFailure: Problem
     );
   }
 }

@@ -18,7 +18,7 @@ public class AuthController(IAuthService authService) : BaseController
 
     return result.When(
         onSuccess: _ => Ok("User registered successfully"),
-        onFailure: BadRequest
+        onFailure: Problem
     );
   }
 
@@ -30,7 +30,7 @@ public class AuthController(IAuthService authService) : BaseController
 
     return result.When(
         onSuccess: Ok,
-        onFailure: Unauthorized
+        onFailure: Problem
     );
   }
 
@@ -43,7 +43,7 @@ public class AuthController(IAuthService authService) : BaseController
 
     return result.When(
         onSuccess: Ok,
-        onFailure: Unauthorized
+        onFailure: Problem
     );
   }
 
@@ -56,7 +56,7 @@ public class AuthController(IAuthService authService) : BaseController
 
     return result.When(
         onSuccess: _ => Ok("Password changed successfully"),
-        onFailure: BadRequest
+        onFailure: Problem
     );
   }
 }

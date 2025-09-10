@@ -14,12 +14,12 @@ public class NotesService(INotesRepository repository) : INotesService
   {
     if (userId <= 0)
     {
-      return ServiceResponse<NoteToGetDto>.Failure("User not authorized");
+      return ServiceResponse<NoteToGetDto>.Failure(Error.Unauthorized("Notes.Unauthorized", "User not authorized"));
     }
 
     if (string.IsNullOrEmpty(note.Title) && string.IsNullOrEmpty(note.Body))
     {
-      return ServiceResponse<NoteToGetDto>.Failure("Note should have at least a title or body");
+      return ServiceResponse<NoteToGetDto>.Failure(Error.Validation("Notes.InvalidInput", "Note should have at least a title or body"));
     }
 
     var request = new CreateNoteRequest(userId!, note.Title, note.Body);
@@ -40,14 +40,14 @@ public class NotesService(INotesRepository repository) : INotesService
       return ServiceResponse<NoteToGetDto>.Success(noteToGetDto);
     }
 
-    return ServiceResponse<NoteToGetDto>.Failure("Failed to create note");
+    return ServiceResponse<NoteToGetDto>.Failure(Error.Failure("Notes.CreationFailed", "Failed to create note"));
   }
 
   public async Task<ServiceResponse<bool>> DeleteNoteAsync(int userId, int noteId)
   {
     if (userId <= 0)
     {
-      return ServiceResponse<bool>.Failure("User not authorized");
+      return ServiceResponse<bool>.Failure(Error.Unauthorized("Notes.Unauthorized", "User not authorized"));
     }
 
     var request = new DeleteNoteRequest(noteId, userId!);
@@ -56,7 +56,7 @@ public class NotesService(INotesRepository repository) : INotesService
 
     if (!success)
     {
-      return ServiceResponse<bool>.Failure("Failed to delete note");
+      return ServiceResponse<bool>.Failure(Error.Failure("Notes.DeletionFailed", "Failed to delete note"));
     }
 
     return ServiceResponse<bool>.Success(true);
@@ -66,7 +66,7 @@ public class NotesService(INotesRepository repository) : INotesService
   {
     if (userId <= 0)
     {
-      return ServiceResponse<NoteToGetDto>.Failure("User not authorized");
+      return ServiceResponse<NoteToGetDto>.Failure(Error.Unauthorized("Notes.Unauthorized", "User not authorized"));
     }
 
     var request = new GetNoteRequest(noteId, userId!);
@@ -75,7 +75,7 @@ public class NotesService(INotesRepository repository) : INotesService
 
     if (note == null)
     {
-      return ServiceResponse<NoteToGetDto>.Failure("Note not found");
+      return ServiceResponse<NoteToGetDto>.Failure(Error.NotFound("Notes.NotFound", "Note not found"));
     }
 
     var noteToGetDto = new NoteToGetDto
@@ -94,7 +94,7 @@ public class NotesService(INotesRepository repository) : INotesService
   {
     if (userId <= 0)
     {
-      return ServiceResponse<IEnumerable<NoteToGetDto>>.Failure("User not authorized");
+      return ServiceResponse<IEnumerable<NoteToGetDto>>.Failure(Error.Unauthorized("Notes.Unauthorized", "User not authorized"));
     }
 
     IEnumerable<Note> notes = await _repository.GetNotesByUserIdAsync(userId!);
@@ -115,17 +115,17 @@ public class NotesService(INotesRepository repository) : INotesService
   {
     if (userId <= 0)
     {
-      return ServiceResponse<NoteToGetDto>.Failure("User not authorized");
+      return ServiceResponse<NoteToGetDto>.Failure(Error.Unauthorized("Notes.Unauthorized", "User not authorized"));
     }
 
     if (noteId <= 0)
     {
-      return ServiceResponse<NoteToGetDto>.Failure("Invalid note ID");
+      return ServiceResponse<NoteToGetDto>.Failure(Error.Validation("Notes.InvalidInput", "Invalid note ID"));
     }
 
     if (string.IsNullOrWhiteSpace(note.Title) && string.IsNullOrWhiteSpace(note.Body))
     {
-      return ServiceResponse<NoteToGetDto>.Failure("At least title or body must be provided");
+      return ServiceResponse<NoteToGetDto>.Failure(Error.Validation("Notes.InvalidInput", "At least title or body must be provided"));
     }
 
     var request = new UpdateNoteRequest(noteId, userId!, note.Title, note.Body);
@@ -134,7 +134,7 @@ public class NotesService(INotesRepository repository) : INotesService
 
     if (updatedNote == null)
     {
-      return ServiceResponse<NoteToGetDto>.Failure("Failed to update note");
+      return ServiceResponse<NoteToGetDto>.Failure(Error.Failure("Notes.UpdateFailed", "Failed to update note"));
     }
     var noteToGetDto = new NoteToGetDto
     {

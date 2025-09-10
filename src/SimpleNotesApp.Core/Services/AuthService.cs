@@ -21,14 +21,14 @@ public class AuthService(IAuthRepository repository, IAuthHelper authHelper) : I
   {
     if (user.Password != user.PasswordConfirmation)
     {
-      return ServiceResponse<bool>.Failure("Passwords do not match");
+      return ServiceResponse<bool>.Failure(Error.Validation("Auth.PasswordMismatch", "Passwords do not match"));
     }
 
     bool userExists = await _repository.UserExistsAsync(user.Email);
 
     if (userExists)
     {
-      return ServiceResponse<bool>.Failure("User already exists");
+      return ServiceResponse<bool>.Failure(Error.Conflict("Auth.UserExists", "User already exists"));
     }
 
     byte[] passwordSalt = new byte[16];
@@ -48,47 +48,47 @@ public class AuthService(IAuthRepository repository, IAuthHelper authHelper) : I
 
     bool isRegistered = await _repository.RegisterUserAsync(request);
 
-    if (isRegistered)
+    if (!isRegistered)
     {
-      return ServiceResponse<bool>.Success(true);
+      return ServiceResponse<bool>.Failure(Error.Failure("Auth.RegistrationFailed", "Failed to register user"));
     }
 
-    return ServiceResponse<bool>.Failure("Failed to register user");
-
+    return ServiceResponse<bool>.Success(true);
   }
+
   public async Task<ServiceResponse<TokensResponseDto>> LoginAsync(UserForLoginDto user)
   {
     UserForLoginConfirmation? userForConfirmation = await _repository.GetUserForLoginAsync(user.Email);
 
     if (userForConfirmation == null)
     {
-      return ServiceResponse<TokensResponseDto>.Failure("Email or password is incorrect");
+      return ServiceResponse<TokensResponseDto>.Failure(Error.Unauthorized("Auth.InvalidCredentials", "Email or password is incorrect"));
     }
 
     if (userForConfirmation.PasswordSalt == null || userForConfirmation.PasswordHash == null)
     {
-      return ServiceResponse<TokensResponseDto>.Failure("Email or password is incorrect");
+      return ServiceResponse<TokensResponseDto>.Failure(Error.Unauthorized("Auth.InvalidCredentials", "Email or password is incorrect"));
     }
 
     byte[] passwordHash = _authHelper.GetPasswordHash(user.Password, userForConfirmation.PasswordSalt);
 
     if (!IsPasswordValid(passwordHash, userForConfirmation.PasswordHash))
     {
-      return ServiceResponse<TokensResponseDto>.Failure("Email or password is incorrect");
+      return ServiceResponse<TokensResponseDto>.Failure(Error.Unauthorized("Auth.InvalidCredentials", "Email or password is incorrect"));
     }
 
     int? userId = await _repository.GetUserIdByEmailAsync(user.Email);
 
     if (userId == null)
     {
-      return ServiceResponse<TokensResponseDto>.Failure("Something went wrong");
+      return ServiceResponse<TokensResponseDto>.Failure(Error.Failure("Auth.UserNotFound", "Something went wrong"));
     }
 
     string refreshToken = await CreateAndSaveRefreshTokenAsync(userId.Value);
 
     if (string.IsNullOrEmpty(refreshToken))
     {
-      return ServiceResponse<TokensResponseDto>.Failure("Something went wrong");
+      return ServiceResponse<TokensResponseDto>.Failure(Error.Failure("Auth.TokenCreationFailed", "Something went wrong"));
     }
 
     var tokens = new TokensResponseDto(
@@ -104,17 +104,17 @@ public class AuthService(IAuthRepository repository, IAuthHelper authHelper) : I
 
     if (userFromDb == null)
     {
-      return ServiceResponse<TokensResponseDto>.Failure("Failed to refresh token");
+      return ServiceResponse<TokensResponseDto>.Failure(Error.Unauthorized("Auth.InvalidToken", "Refresh token is invalid"));
     }
 
     if (refreshToken != userFromDb.RefreshToken)
     {
-      return ServiceResponse<TokensResponseDto>.Failure("Refresh token is invalid");
+      return ServiceResponse<TokensResponseDto>.Failure(Error.Unauthorized("Auth.InvalidToken", "Refresh token is invalid"));
     }
 
     if (userFromDb.RefreshTokenExpires.CompareTo(DateTime.UtcNow) < 0)
     {
-      return ServiceResponse<TokensResponseDto>.Failure("Refresh token is expired");
+      return ServiceResponse<TokensResponseDto>.Failure(Error.Unauthorized("Auth.TokenExpired", "Refresh token is expired"));
     }
 
     string newAccessToken = _authHelper.CreateToken(userFromDb.UserId);
@@ -129,31 +129,31 @@ public class AuthService(IAuthRepository repository, IAuthHelper authHelper) : I
   {
     if (userId <= 0)
     {
-      return ServiceResponse<bool>.Failure("User not authorized");
+      return ServiceResponse<bool>.Failure(Error.Unauthorized("Auth.Unauthorized", "User not authorized"));
     }
 
     UserForPasswordChange? user = await _repository.GetUserForPasswordChangeAsync(userId);
 
     if (user == null)
     {
-      return ServiceResponse<bool>.Failure("User not found");
+      return ServiceResponse<bool>.Failure(Error.NotFound("Auth.UserNotFound", "User not found"));
     }
 
     if (!IsPasswordValid(
         _authHelper.GetPasswordHash(changePasswordDto.OldPassword, user.PasswordSalt),
         user.PasswordHash))
     {
-      return ServiceResponse<bool>.Failure("Current password is incorrect");
+      return ServiceResponse<bool>.Failure(Error.Unauthorized("Auth.InvalidCredentials", "Current password is incorrect"));
     }
 
     if (changePasswordDto.NewPassword == changePasswordDto.OldPassword)
     {
-      return ServiceResponse<bool>.Failure("New password cannot be the same as the old password");
+      return ServiceResponse<bool>.Failure(Error.Validation("Auth.InvalidInput", "New password cannot be the same as the old password"));
     }
 
     if (changePasswordDto.NewPassword != changePasswordDto.NewPasswordConfirmation)
     {
-      return ServiceResponse<bool>.Failure("New passwords do not match");
+      return ServiceResponse<bool>.Failure(Error.Validation("Auth.InvalidInput", "New passwords do not match"));
     }
 
     byte[] passwordSalt = new byte[16];
@@ -180,7 +180,7 @@ public class AuthService(IAuthRepository repository, IAuthHelper authHelper) : I
       return ServiceResponse<bool>.Success(true);
     }
 
-    return ServiceResponse<bool>.Failure("Failed to change password");
+    return ServiceResponse<bool>.Failure(Error.Failure("Auth.PasswordChangeFailed", "Failed to change password"));
   }
 
   private async Task<string> CreateAndSaveRefreshTokenAsync(int userId)
