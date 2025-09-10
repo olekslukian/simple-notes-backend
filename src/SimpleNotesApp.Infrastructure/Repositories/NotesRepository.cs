@@ -42,7 +42,7 @@ public class NotesRepository(DbContext db) : INotesRepository
     return _db.QuerySingleAsync<Note>(SP.GET_NOTE_BY_ID, parameters);
   }
 
-  public Task<IEnumerable<Note>> GetNotesByUserIdAsync(string userId)
+  public Task<IEnumerable<Note>> GetNotesByUserIdAsync(int userId)
   {
     var parameters = new
     {

@@ -68,7 +68,7 @@ public class AuthRepository(DbContext db) : IAuthRepository
     return await _db.ExecuteAsync(SP.PASSWORD_CHANGE, parameters);
   }
 
-  public async Task<UserForPasswordChange?> GetUserForPasswordChangeAsync(string userId)
+  public async Task<UserForPasswordChange?> GetUserForPasswordChangeAsync(int userId)
   {
     return await _db.QuerySingleAsync<UserForPasswordChange>(
       SP.GET_USER_FOR_PASSWORD_CHANGE,
