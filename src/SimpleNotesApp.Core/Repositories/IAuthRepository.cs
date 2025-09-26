@@ -1,7 +1,7 @@
-using SimpleNotesApp.Infrastructure.Repositories.Requests;
-using SimpleNotesApp.Infrastructure.Models;
+using SimpleNotesApp.Core.Models;
+using SimpleNotesApp.Core.Repositories.Requests;
 
-namespace SimpleNotesApp.Infrastructure.Repositories;
+namespace SimpleNotesApp.Core.Repositories;
 
 public interface IAuthRepository
 {

@@ -1,4 +1,4 @@
-namespace SimpleNotesApp.Infrastructure.Models;
+namespace SimpleNotesApp.Core.Models;
 
 public partial class User
 {
