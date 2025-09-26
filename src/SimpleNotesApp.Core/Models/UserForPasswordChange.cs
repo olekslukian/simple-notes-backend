@@ -1,6 +1,4 @@
-using System;
-
-namespace SimpleNotesApp.Infrastructure.Models;
+namespace SimpleNotesApp.Core.Models;
 
 public partial class UserForPasswordChange
 {

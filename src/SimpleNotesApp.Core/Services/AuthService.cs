@@ -5,10 +5,10 @@
 using System.Security.Cryptography;
 using SimpleNotesApp.Core.Common;
 using SimpleNotesApp.Core.Dto.Auth;
+using SimpleNotesApp.Core.Models;
+using SimpleNotesApp.Core.Repositories;
+using SimpleNotesApp.Core.Repositories.Requests;
 using SimpleNotesApp.Core.Services.Helpers;
-using SimpleNotesApp.Infrastructure.Models;
-using SimpleNotesApp.Infrastructure.Repositories;
-using SimpleNotesApp.Infrastructure.Repositories.Requests;
 
 namespace SimpleNotesApp.Core.Services;
 

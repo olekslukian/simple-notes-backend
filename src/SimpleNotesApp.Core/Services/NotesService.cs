@@ -1,9 +1,8 @@
-using Microsoft.IdentityModel.Tokens;
 using SimpleNotesApp.Core.Common;
 using SimpleNotesApp.Core.Dto.Notes;
-using SimpleNotesApp.Infrastructure.Models;
-using SimpleNotesApp.Infrastructure.Repositories;
-using SimpleNotesApp.Infrastructure.Repositories.Requests;
+using SimpleNotesApp.Core.Models;
+using SimpleNotesApp.Core.Repositories;
+using SimpleNotesApp.Core.Repositories.Requests;
 
 namespace SimpleNotesApp.Core.Services;
 

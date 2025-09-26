@@ -3,7 +3,7 @@
 A clean architecture REST API for a note-taking application with JWT authentication.
 Client App is implemented [here](https://github.com/olekslukian/simple-notes-android).
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **.NET 8.0** - Web API framework
 - **Dapper** - Lightweight ORM for data access
@@ -12,7 +12,7 @@ Client App is implemented [here](https://github.com/olekslukian/simple-notes-and
 - **Swagger/OpenAPI** - API documentation
 - **Clean Architecture** - Separation of concerns
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 src/
@@ -21,17 +21,17 @@ src/
 └── SimpleNotesApp.Infrastructure/ # Data access, Models, SQL procedures
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [SQL Server](https://www.microsoft.com/sql-server) (Express/LocalDB works fine)
+- [SQL Server](https://www.microsoft.com/sql-server)
 
 ### 1. Clone & Setup
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/olekslukian/simple-notes-backend.git
 cd simple-notes-backend
 ```
 
@@ -61,15 +61,13 @@ dotnet user-secrets set "AppSettings:PasswordKey" "your-password-encryption-key-
 dotnet run --project src/SimpleNotesApp.API
 ```
 
-🎉 **API is now running!**
-
 - **HTTPS**: `https://localhost:7108`
 - **HTTP**: `http://localhost:5108`
 - **Swagger UI**: `https://localhost:7108/swagger` 📖
 
-## 📚 API Endpoints
+## API Endpoints
 
-### 🔐 Authentication
+### Authentication
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
 | `POST` | `/api/auth/register` | Register new user | ❌ |
@@ -77,7 +75,7 @@ dotnet run --project src/SimpleNotesApp.API
 | `GET` | `/api/auth/refresh-token` | Refresh JWT token | ❌ |
 | `PATCH` | `/api/auth/change-password` | Change password | ✅ |
 
-### 📝 Notes
+### Notes
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
 | `GET` | `/api/notes` | Get all user notes | ✅ |
@@ -86,7 +84,7 @@ dotnet run --project src/SimpleNotesApp.API
 | `PATCH` | `/api/notes/{id}` | Update note | ✅ |
 | `DELETE` | `/api/notes/{id}` | Delete note | ✅ |
 
-## 🧪 Quick Test
+## Quick Test
 
 ```bash
 # Register a new user

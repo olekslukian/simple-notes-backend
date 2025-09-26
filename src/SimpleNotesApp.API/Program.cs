@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using SimpleNotesApp.Core.Repositories;
 using SimpleNotesApp.Core.Services;
 using SimpleNotesApp.Core.Services.Helpers;
 using SimpleNotesApp.Infrastructure.Data;
@@ -14,6 +15,11 @@ builder.Services.AddScoped<INotesRepository, NotesRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<INotesService, NotesService>();
+builder.Services.AddHttpClient<IEmailService, EmailService>(client =>
+{
+  client.Timeout = TimeSpan.FromSeconds(30);
+});
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddControllers();
 

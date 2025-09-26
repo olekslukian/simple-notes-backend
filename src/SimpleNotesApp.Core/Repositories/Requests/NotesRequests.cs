@@ -1,4 +1,4 @@
-namespace SimpleNotesApp.Infrastructure.Repositories.Requests;
+namespace SimpleNotesApp.Core.Repositories.Requests;
 
 public record CreateNoteRequest(
     int UserId,
