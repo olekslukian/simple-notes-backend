@@ -13,4 +13,5 @@ public interface IAuthRepository
   Task<bool> UpdateRefreshTokenAsync(UpdateRefreshTokenRequest request);
   Task<bool> ChangePasswordAsync(ChangePasswordRequest request);
   Task<UserForPasswordChange?> GetUserForPasswordChangeAsync(int userId);
+  Task<bool> UpsertUserForOtpAsync(UpsertUserForOtpRequest request);
 }

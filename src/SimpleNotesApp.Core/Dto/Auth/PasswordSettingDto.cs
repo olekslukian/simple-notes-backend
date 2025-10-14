@@ -1,14 +1,14 @@
 namespace SimpleNotesApp.Core.Dto.Auth;
 
-public partial class UserForRegistrationDto
+public partial class PasswordSettingDto
 {
-    public string Email { get; set; }
+    public string Otp { get; set; }
     public string Password { get; set; }
     public string PasswordConfirmation { get; set; }
 
-    public UserForRegistrationDto()
+    public PasswordSettingDto()
     {
-        Email ??= string.Empty;
+        Otp ??= string.Empty;
         Password ??= string.Empty;
         PasswordConfirmation ??= string.Empty;
     }

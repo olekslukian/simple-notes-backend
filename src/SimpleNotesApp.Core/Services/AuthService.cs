@@ -12,49 +12,12 @@ using SimpleNotesApp.Core.Services.Helpers;
 
 namespace SimpleNotesApp.Core.Services;
 
-public class AuthService(IAuthRepository repository, IAuthHelper authHelper) : IAuthService
+public class AuthService(IAuthRepository repository, IEmailService emailService, IAuthHelper authHelper) : IAuthService
 {
   private readonly IAuthRepository _repository = repository;
+  private readonly IEmailService _emailService = emailService;
   private readonly IAuthHelper _authHelper = authHelper;
 
-  public async Task<ServiceResponse<bool>> RegisterUserAsync(UserForRegistrationDto user)
-  {
-    if (user.Password != user.PasswordConfirmation)
-    {
-      return ServiceResponse<bool>.Failure(Error.Validation("Auth.PasswordMismatch", "Passwords do not match"));
-    }
-
-    bool userExists = await _repository.UserExistsAsync(user.Email);
-
-    if (userExists)
-    {
-      return ServiceResponse<bool>.Failure(Error.Conflict("Auth.UserExists", "User already exists"));
-    }
-
-    byte[] passwordSalt = new byte[16];
-
-    using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
-    {
-      rng.GetNonZeroBytes(passwordSalt);
-    }
-
-    byte[] passwordHash = _authHelper.GetPasswordHash(user.Password, passwordSalt);
-
-    var request = new RegisterUserRequest(
-      user.Email,
-      passwordHash,
-      passwordSalt
-    );
-
-    bool isRegistered = await _repository.RegisterUserAsync(request);
-
-    if (!isRegistered)
-    {
-      return ServiceResponse<bool>.Failure(Error.Failure("Auth.RegistrationFailed", "Failed to register user"));
-    }
-
-    return ServiceResponse<bool>.Success(true);
-  }
 
   public async Task<ServiceResponse<TokensResponseDto>> LoginAsync(UserForLoginDto user)
   {
@@ -217,5 +180,24 @@ public class AuthService(IAuthRepository repository, IAuthHelper authHelper) : I
     }
 
     return true;
+  }
+
+  public Task<ServiceResponse<bool>> SetUserPasswordAsync(int userId, PasswordSettingDto passwordDto)
+  {
+    throw new NotImplementedException();
+  }
+
+  public async Task<ServiceResponse<bool>> SendOtpForEmailVerificationAsync(string email)
+  {
+    if (!_authHelper.IsValidEmail(email))
+    {
+      return ServiceResponse<bool>.Failure(Error.Validation("Auth.InvalidEmail", "Email format is invalid"));
+    }
+
+    var otp = _authHelper.GenerateOtp();
+
+    var sendResult = await _emailService.SendVerificationEmailAsync(email, otp);
+
+    return sendResult;
   }
 }

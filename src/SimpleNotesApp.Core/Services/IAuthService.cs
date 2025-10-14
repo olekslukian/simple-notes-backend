@@ -6,8 +6,9 @@ namespace SimpleNotesApp.Core.Services;
 
 public interface IAuthService
 {
-    Task<ServiceResponse<bool>> RegisterUserAsync(UserForRegistrationDto user);
     Task<ServiceResponse<TokensResponseDto>> LoginAsync(UserForLoginDto user);
     Task<ServiceResponse<TokensResponseDto>> RefreshTokenAsync(string refreshToken);
+    Task<ServiceResponse<bool>> SetUserPasswordAsync(int userId, PasswordSettingDto passwordDto);
     Task<ServiceResponse<bool>> ChangePasswordAsync(int userId, ChangePasswordDto changePasswordDto);
+    Task<ServiceResponse<bool>> SendOtpForEmailVerificationAsync(string email);
 }
