@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -13,6 +14,32 @@ namespace SimpleNotesApp.Core.Services.Helpers;
 public class AuthHelper(IConfiguration config) : IAuthHelper
 {
     private readonly IConfiguration _config = config;
+
+    public bool IsValidEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return false;
+        }
+
+        try
+        {
+            return Regex.IsMatch(email,
+                @"^[a-zA-Z0-9+._%\-]{1,256}@[a-zA-Z0-9][a-zA-Z0-9\-]{0,64}(\.[a-zA-Z0-9][a-zA-Z0-9\-]{0,25})+$",
+                RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            return false;
+        }
+    }
+
+    public string GenerateOtp()
+    {
+        string otp = (BetterRandom.NextInt() % 1000000).ToString("000000");
+
+        return otp;
+    }
 
     public byte[] GetPasswordHash(string password, byte[] passwordSalt)
     {

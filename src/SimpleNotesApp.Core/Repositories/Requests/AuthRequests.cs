@@ -1,4 +1,4 @@
-namespace SimpleNotesApp.Infrastructure.Repositories.Requests;
+namespace SimpleNotesApp.Core.Repositories.Requests;
 
 public record RegisterUserRequest(
   string Email,
@@ -16,4 +16,11 @@ public record ChangePasswordRequest(
   int UserId,
   byte[] PasswordHash,
   byte[] PasswordSalt
+);
+
+public record UpsertUserForOtpRequest(
+  string Email,
+  byte[] OtpHash,
+  byte[] OtpSalt,
+  DateTime OtpExpiresAt
 );

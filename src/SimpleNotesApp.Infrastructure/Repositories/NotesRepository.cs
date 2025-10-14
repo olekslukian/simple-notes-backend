@@ -2,7 +2,6 @@ using SimpleNotesApp.Core.Models;
 using SimpleNotesApp.Core.Repositories;
 using SimpleNotesApp.Core.Repositories.Requests;
 using SimpleNotesApp.Infrastructure.Data;
-using SimpleNotesApp.Infrastructure.Repositories.Requests;
 
 namespace SimpleNotesApp.Infrastructure.Repositories;
 

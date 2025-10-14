@@ -6,6 +6,7 @@ using SimpleNotesApp.Core.Services;
 using SimpleNotesApp.Core.Services.Helpers;
 using SimpleNotesApp.Infrastructure.Data;
 using SimpleNotesApp.Infrastructure.Repositories;
+using SimpleNotesApp.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,11 +16,11 @@ builder.Services.AddScoped<INotesRepository, NotesRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<INotesService, NotesService>();
-builder.Services.AddHttpClient<IEmailService, EmailService>(client =>
+builder.Services.AddHttpClient<IEmailService, MailgunEmailService>(client =>
 {
   client.Timeout = TimeSpan.FromSeconds(30);
 });
-builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IEmailService, MailgunEmailService>();
 
 builder.Services.AddControllers();
 

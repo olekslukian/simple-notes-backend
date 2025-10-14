@@ -18,4 +18,5 @@ public abstract class SP
     public const string UPDATE_NOTE = "NotesAppSchema.spNote_Update";
     public const string DELETE_NOTE = "NotesAppSchema.spNote_Delete";
     public const string GET_NOTES_BY_USER_ID = "NotesAppSchema.spNotes_GetAllByUserId";
+    public const string UPSERT_USER_FOR_OTP = "NotesAppSchema.spUser_Upsert_for_Otp";
 }

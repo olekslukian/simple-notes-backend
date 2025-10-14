@@ -11,18 +11,6 @@ public class AuthController(IAuthService authService) : BaseController
   private readonly IAuthService _authService = authService;
 
   [AllowAnonymous]
-  [HttpPost("register")]
-  public async Task<IActionResult> Register(UserForRegistrationDto user)
-  {
-    var result = await _authService.RegisterUserAsync(user);
-
-    return result.When(
-        onSuccess: _ => Ok("User registered successfully"),
-        onFailure: Problem
-    );
-  }
-
-  [AllowAnonymous]
   [HttpPost("login")]
   public async Task<IActionResult> LogIn(UserForLoginDto user)
   {
@@ -43,6 +31,31 @@ public class AuthController(IAuthService authService) : BaseController
 
     return result.When(
         onSuccess: Ok,
+        onFailure: Problem
+    );
+  }
+
+  // [HttpPost("register")]
+  // public async Task<IActionResult> SetPassword(PasswordSettingDto passwordSettingDto)
+  // {
+  //   var userId = GetCurrentUserId();
+
+  //   var result = await _authService.SetUserPasswordAsync(passwordSettingDto);
+
+  //   return result.When(
+  //       onSuccess: _ => Ok("User registered successfully"),
+  //       onFailure: Problem
+  //   );
+  // }
+
+  [AllowAnonymous]
+  [HttpPost("send-email-verification-code")]
+  public async Task<IActionResult> SendEmailVerificationCode([FromBody] string email)
+  {
+    var result = await _authService.SendOtpForEmailVerificationAsync(email);
+
+    return result.When(
+        onSuccess: _ => Ok("Verification code sent successfully"),
         onFailure: Problem
     );
   }

@@ -76,4 +76,9 @@ public class AuthRepository(DbContext db) : IAuthRepository
       new { UserId = userId }
     );
   }
+
+  public Task<bool> UpsertUserForOtpAsync(UpsertUserForOtpRequest request)
+  {
+    throw new NotImplementedException();
+  }
 }
