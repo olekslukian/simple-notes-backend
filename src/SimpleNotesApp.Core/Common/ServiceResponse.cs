@@ -9,6 +9,10 @@ public sealed class ServiceResponse<T>
   private readonly List<Error> _errors;
   public bool IsSuccess { get; }
 
+  public T? Data => _data;
+  public List<Error> Errors => _errors;
+  public Error? Error => _errors.FirstOrDefault();
+
   private ServiceResponse(T? data)
   {
     _data = data;

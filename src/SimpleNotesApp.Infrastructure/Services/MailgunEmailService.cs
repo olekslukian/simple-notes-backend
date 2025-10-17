@@ -31,7 +31,7 @@ public class MailgunEmailService : IEmailService
     _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authValue);
   }
 
-  public async Task<ServiceResponse<bool>> SendTestEmailAsync(string to)
+  public async Task<ServiceResponse<string>> SendTestEmailAsync(string to)
   {
 
     return await SendEmailInternalAsync(
@@ -43,7 +43,7 @@ public class MailgunEmailService : IEmailService
     );
   }
 
-  public async Task<ServiceResponse<bool>> SendVerificationEmailAsync(string to, string otpCode)
+  public async Task<ServiceResponse<string>> SendVerificationEmailAsync(string to, string otpCode)
   {
     return await SendEmailInternalAsync(
       to: to,
@@ -54,7 +54,7 @@ public class MailgunEmailService : IEmailService
     );
   }
 
-  private async Task<ServiceResponse<bool>> SendEmailInternalAsync(string to, string subject, string body, string? htmlBody, string? from)
+  private async Task<ServiceResponse<string>> SendEmailInternalAsync(string to, string subject, string body, string? htmlBody, string? from)
   {
     try
     {
@@ -80,7 +80,7 @@ public class MailgunEmailService : IEmailService
       {
         _logger.LogInformation("Email successfully sent");
 
-        return ServiceResponse<bool>.Success(true);
+        return ServiceResponse<string>.Success(ObscureEmail(to));
       }
       else
       {
@@ -94,14 +94,28 @@ public class MailgunEmailService : IEmailService
           _ => Error.Failure("Email.SendFailed", $"Mailgun API returned an error: {response.StatusCode}")
         };
 
-        return ServiceResponse<bool>.Failure(error);
+        return ServiceResponse<string>.Failure(error);
       }
     }
     catch (Exception ex)
     {
       _logger.LogError(ex, "Failed to send email");
 
-      return ServiceResponse<bool>.Failure(Error.Failure("Email.SendFailed", "Failed to send email"));
+      return ServiceResponse<string>.Failure(Error.Failure("Email.SendFailed", "Failed to send email"));
     }
   }
+  private string ObscureEmail(string email)
+  {
+    var atIdx = email.IndexOf('@');
+    if (atIdx <= 1) return "***" + email;
+
+    var local = email[..atIdx];
+    var domain = email[atIdx..];
+
+    if (local.Length <= 2)
+      return local[0] + "*" + domain;
+
+    return local[0] + new string('*', local.Length - 2) + local[^1] + domain;
+  }
+
 }

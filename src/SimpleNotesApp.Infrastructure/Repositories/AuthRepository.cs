@@ -27,16 +27,12 @@ public class AuthRepository(DbContext db) : IAuthRepository
     return result <= 0 ? null : result;
   }
 
-  public async Task<bool> RegisterUserAsync(RegisterUserRequest request)
+  public async Task<string?> GetUserEmailByIdAsync(int userId)
   {
-    var parameters = new
-    {
-      Email = request.Email,
-      PasswordHash = request.PasswordHash,
-      PasswordSalt = request.PasswordSalt
-    };
-
-    return await _db.ExecuteAsync(SP.USER_REGISTER, parameters);
+    return await _db.QuerySingleAsync<string?>(
+      SP.GET_USER_EMAIL_BY_ID,
+      new { UserId = userId }
+    );
   }
 
   public async Task<bool> UpdateRefreshTokenAsync(UpdateRefreshTokenRequest request)
@@ -79,6 +75,22 @@ public class AuthRepository(DbContext db) : IAuthRepository
 
   public Task<bool> UpsertUserForOtpAsync(UpsertUserForOtpRequest request)
   {
-    throw new NotImplementedException();
+    var parameters = new
+    {
+      Email = request.Email,
+      OtpHash = request.OtpHash,
+      OtpSalt = request.OtpSalt,
+      OtpExpiresAt = request.OtpExpiresAt
+    };
+
+    return _db.ExecuteAsync(SP.UPSERT_USER_FOR_OTP, parameters);
+  }
+
+  public Task<UserForEmailConfirmation?> GetUserForEmailConfirmationAsync(string email)
+  {
+    return _db.QuerySingleAsync<UserForEmailConfirmation>(
+      SP.USER_FOR_EMAIL_CONFIRMATION,
+      new { Email = email }
+    );
   }
 }
