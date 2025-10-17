@@ -97,5 +97,4 @@ public class AuthHelper(IConfiguration config) : IAuthHelper
 
         return base64Url;
     }
-
 }

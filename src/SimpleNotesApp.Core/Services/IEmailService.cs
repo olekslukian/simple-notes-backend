@@ -5,6 +5,6 @@ namespace SimpleNotesApp.Core.Services;
 
 public interface IEmailService
 {
-  Task<ServiceResponse<bool>> SendTestEmailAsync(string to);
-  Task<ServiceResponse<bool>> SendVerificationEmailAsync(string to, string otpCode);
+  Task<ServiceResponse<string>> SendTestEmailAsync(string to);
+  Task<ServiceResponse<string>> SendVerificationEmailAsync(string to, string otpCode);
 }

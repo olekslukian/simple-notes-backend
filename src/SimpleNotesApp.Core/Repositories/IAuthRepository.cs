@@ -6,12 +6,13 @@ namespace SimpleNotesApp.Core.Repositories;
 public interface IAuthRepository
 {
   Task<bool> UserExistsAsync(string email);
-  Task<bool> RegisterUserAsync(RegisterUserRequest request);
   Task<UserForLoginConfirmation?> GetUserForLoginAsync(string email);
   Task<int?> GetUserIdByEmailAsync(string email);
+  Task<string?> GetUserEmailByIdAsync(int userId);
   Task<User?> GetUserByRefreshTokenAsync(string refreshToken);
   Task<bool> UpdateRefreshTokenAsync(UpdateRefreshTokenRequest request);
   Task<bool> ChangePasswordAsync(ChangePasswordRequest request);
   Task<UserForPasswordChange?> GetUserForPasswordChangeAsync(int userId);
   Task<bool> UpsertUserForOtpAsync(UpsertUserForOtpRequest request);
+  Task<UserForEmailConfirmation?> GetUserForEmailConfirmationAsync(string email);
 }
