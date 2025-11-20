@@ -7,13 +7,13 @@ CREATE OR ALTER PROCEDURE NotesAppSchema.spUser_getByRefToken
 AS
 
 BEGIN
-    SELECT [UserId], 
-            [Email], 
-            [PasswordHash], 
-            [PasswordSalt], 
-            [RefreshToken], 
-            [RefreshTokenExpires] 
-        FROM NotesAppSchema.Auth 
+    SELECT [UserId],
+            [Email],
+            [PasswordHash],
+            [PasswordSalt],
+            [RefreshToken],
+            [RefreshTokenExpiresAt]
+        FROM NotesAppSchema.Auth
         WHERE RefreshToken = @RefreshToken
 END
 GO

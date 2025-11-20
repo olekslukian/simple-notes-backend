@@ -3,7 +3,7 @@ namespace SimpleNotesApp.Core.Repositories.Requests;
 public record UpdateRefreshTokenRequest(
   int UserId,
   string RefreshToken,
-  DateTime RefreshTokenExpires
+  DateTime RefreshTokenExpiresAt
 );
 
 public record ChangePasswordRequest(

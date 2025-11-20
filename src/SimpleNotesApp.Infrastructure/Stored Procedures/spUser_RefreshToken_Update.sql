@@ -4,12 +4,12 @@ GO
 CREATE OR ALTER PROCEDURE NotesAppSchema.spUser_RefreshToken_Update
     @UserId INT,
     @RefreshToken NVARCHAR(MAX),
-    @RefreshTokenExpires DATETIME
+    @RefreshTokenExpiresAt DATETIME
 AS
 BEGIN
     UPDATE NotesAppSchema.Auth
     SET RefreshToken = @RefreshToken,
-        RefreshTokenExpires = @RefreshTokenExpires
+        RefreshTokenExpiresAt = @RefreshTokenExpiresAt
     WHERE UserId = @UserId;
 END
 GO

@@ -21,12 +21,6 @@ public class AuthRepository(DbContext db) : IAuthRepository
        );
   }
 
-  public async Task<int?> GetUserIdByEmailAsync(string email)
-  {
-    var result = await _db.QuerySingleAsync<int?>(SP.USERID_GET, new { Email = email });
-    return result <= 0 ? null : result;
-  }
-
   public async Task<string?> GetUserEmailByIdAsync(int userId)
   {
     return await _db.QuerySingleAsync<string?>(
@@ -41,7 +35,7 @@ public class AuthRepository(DbContext db) : IAuthRepository
     {
       UserId = request.UserId,
       RefreshToken = request.RefreshToken,
-      RefreshTokenExpires = request.RefreshTokenExpires
+      RefreshTokenExpiresAt = request.RefreshTokenExpiresAt
     };
 
     return await _db.ExecuteAsync(SP.REFRESH_TOKEN_UPDATE, parameters);
@@ -73,7 +67,7 @@ public class AuthRepository(DbContext db) : IAuthRepository
     );
   }
 
-  public Task<bool> UpsertUserForOtpAsync(UpsertUserForOtpRequest request)
+  public async Task<bool> UpsertUserForOtpAsync(UpsertUserForOtpRequest request)
   {
     var parameters = new
     {
@@ -83,14 +77,23 @@ public class AuthRepository(DbContext db) : IAuthRepository
       OtpExpiresAt = request.OtpExpiresAt
     };
 
-    return _db.ExecuteAsync(SP.UPSERT_USER_FOR_OTP, parameters);
+    return await _db.ExecuteAsync(SP.UPSERT_USER_FOR_OTP, parameters);
   }
 
-  public Task<UserForEmailConfirmation?> GetUserForEmailConfirmationAsync(string email)
+  public async Task<UserForEmailConfirmation?> GetUserForEmailConfirmationAsync(string email)
   {
-    return _db.QuerySingleAsync<UserForEmailConfirmation>(
+    return await _db.QuerySingleAsync<UserForEmailConfirmation>(
       SP.USER_FOR_EMAIL_CONFIRMATION,
       new { Email = email }
     );
   }
+
+  public async Task<bool> SetEmailVerifiedAsync(int userId)
+  {
+    return await _db.ExecuteAsync(
+      SP.USER_SET_EMAIL_VERIFIED,
+      new { UserId = userId }
+    );
+  }
+
 }

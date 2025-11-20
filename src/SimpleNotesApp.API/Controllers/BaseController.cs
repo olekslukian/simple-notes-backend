@@ -43,13 +43,21 @@ public abstract class BaseController : ControllerBase
         return Problem(statusCode: statusCode, title: error.Description);
     }
 
-    private ActionResult ValidationProblem(List<Error> errors)
+    private static ObjectResult ValidationProblem(List<Error> errors)
     {
         var modelStateDictionary = new ModelStateDictionary();
 
         errors.ForEach(error =>
             modelStateDictionary.AddModelError(error.Code, error.Description));
 
-        return ValidationProblem(modelStateDictionary);
+        var problemDetails = new ValidationProblemDetails(modelStateDictionary)
+        {
+            Status = StatusCodes.Status400BadRequest
+        };
+
+        return new ObjectResult(problemDetails)
+        {
+            StatusCode = StatusCodes.Status400BadRequest
+        };
     }
 }

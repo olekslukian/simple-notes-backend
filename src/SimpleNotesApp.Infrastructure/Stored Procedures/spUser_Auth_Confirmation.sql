@@ -8,10 +8,12 @@ AS
 
 BEGIN
 
-    SELECT 
+    SELECT
+        [UserId],
         [Email],
         [PasswordHash],
-        [PasswordSalt] 
+        [PasswordSalt],
+        [IsEmailVerified]
     FROM NotesAppSchema.Auth
         WHERE [Email]=@Email
 

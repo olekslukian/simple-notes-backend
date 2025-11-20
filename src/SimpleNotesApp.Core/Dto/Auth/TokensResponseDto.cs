@@ -1,7 +1,13 @@
 namespace SimpleNotesApp.Core.Dto.Auth;
 
-public partial class TokensResponseDto(string? accessToken, string? refreshToken)
+public partial class TokensResponseDto
 {
-    public string AccessToken { get; set; } = accessToken ?? string.Empty;
-    public string RefreshToken { get; set; } = refreshToken ?? string.Empty;
+    public string AccessToken { get; set; }
+    public string RefreshToken { get; set; }
+
+    public TokensResponseDto()
+    {
+        AccessToken ??= string.Empty;
+        RefreshToken ??= string.Empty;
+    }
 }

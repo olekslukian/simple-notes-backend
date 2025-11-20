@@ -1,4 +1,3 @@
-using System;
 using System.Security.Cryptography;
 
 namespace SimpleNotesApp.Core.Services.Helpers;
