@@ -23,7 +23,7 @@ public class AuthService(IAuthRepository repository, IEmailService emailService,
   {
     UserForLoginConfirmation? userForConfirmation = await _repository.GetUserForLoginAsync(user.Email);
 
-    if (userForConfirmation == null)
+    if (userForConfirmation == null || !userForConfirmation.IsEmailVerified)
     {
       return ServiceResponse<TokensResponseDto>.Failure(Error.Unauthorized("Auth.InvalidCredentials", "Email or password is incorrect"));
     }
@@ -40,27 +40,22 @@ public class AuthService(IAuthRepository repository, IEmailService emailService,
       return ServiceResponse<TokensResponseDto>.Failure(Error.Unauthorized("Auth.InvalidCredentials", "Email or password is incorrect"));
     }
 
-    int? userId = await _repository.GetUserIdByEmailAsync(user.Email);
-
-    if (userId == null)
-    {
-      return ServiceResponse<TokensResponseDto>.Failure(Error.Failure("Auth.UserNotFound", "Something went wrong"));
-    }
-
-    string refreshToken = await CreateAndSaveRefreshTokenAsync(userId.Value);
+    string refreshToken = await CreateAndSaveRefreshTokenAsync(userForConfirmation.UserId);
 
     if (string.IsNullOrEmpty(refreshToken))
     {
       return ServiceResponse<TokensResponseDto>.Failure(Error.Failure("Auth.TokenCreationFailed", "Something went wrong"));
     }
 
-    var tokens = new TokensResponseDto(
-        accessToken: _authHelper.CreateToken(userId.Value),
-        refreshToken: refreshToken
-    );
+    var tokens = new TokensResponseDto
+    {
+      AccessToken = _authHelper.CreateToken(userForConfirmation.UserId),
+      RefreshToken = refreshToken
+    };
 
     return ServiceResponse<TokensResponseDto>.Success(tokens);
   }
+
   public async Task<ServiceResponse<TokensResponseDto>> RefreshTokenAsync(string refreshToken)
   {
     var userFromDb = await _repository.GetUserByRefreshTokenAsync(refreshToken);
@@ -75,7 +70,7 @@ public class AuthService(IAuthRepository repository, IEmailService emailService,
       return ServiceResponse<TokensResponseDto>.Failure(Error.Unauthorized("Auth.InvalidToken", "Refresh token is invalid"));
     }
 
-    if (userFromDb.RefreshTokenExpires.CompareTo(DateTime.UtcNow) < 0)
+    if (userFromDb.RefreshTokenExpiresAt.CompareTo(DateTime.UtcNow) < 0)
     {
       return ServiceResponse<TokensResponseDto>.Failure(Error.Unauthorized("Auth.TokenExpired", "Refresh token is expired"));
     }
@@ -83,7 +78,11 @@ public class AuthService(IAuthRepository repository, IEmailService emailService,
     string newAccessToken = _authHelper.CreateToken(userFromDb.UserId);
     string newRefreshToken = await CreateAndSaveRefreshTokenAsync(userFromDb.UserId);
 
-    var tokens = new TokensResponseDto(accessToken: newAccessToken, refreshToken: newRefreshToken);
+    var tokens = new TokensResponseDto
+    {
+      AccessToken = newAccessToken,
+      RefreshToken = newRefreshToken
+    };
 
     return ServiceResponse<TokensResponseDto>.Success(tokens);
   }
@@ -221,10 +220,11 @@ public class AuthService(IAuthRepository repository, IEmailService emailService,
     if (string.IsNullOrEmpty(refreshToken))
       return ServiceResponse<TokensResponseDto>.Failure(Error.Failure("Auth.TokenCreationFailed", "Something went wrong"));
 
-    var tokens = new TokensResponseDto(
-        accessToken: _authHelper.CreateToken(user.UserId),
-        refreshToken: refreshToken
-    );
+    var tokens = new TokensResponseDto
+    {
+      AccessToken = _authHelper.CreateToken(user.UserId),
+      RefreshToken = refreshToken
+    };
 
     return ServiceResponse<TokensResponseDto>.Success(tokens);
   }
@@ -286,6 +286,11 @@ public class AuthService(IAuthRepository repository, IEmailService emailService,
 
     if (!IsPasswordValid(otpHash, userForVerification.OtpHash))
       return ServiceResponse<UserForEmailConfirmation>.Failure(Error.Unauthorized("Auth.InvalidCredentials", "Email or OTP is incorrect"));
+
+    var emailVerifiedResult = await _repository.SetEmailVerifiedAsync(userForVerification.UserId);
+
+    if (!emailVerifiedResult)
+      return ServiceResponse<UserForEmailConfirmation>.Failure(Error.Failure("Auth.EmailVerificationFailed", "Failed to verify email"));
 
     return ServiceResponse<UserForEmailConfirmation>.Success(userForVerification);
   }
