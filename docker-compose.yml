@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+
+  simple-notes-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: simple-notes-api
+
+    restart: unless-stopped
+
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING}
+      - AppSettings__TokenKey=${JWT_SECRET}
+      - AppSettings__PasswordKey=${PASSWORD_KEY}
+      - Mailgun__ApiKey=${MAILGUN_API_KEY}
+      - Mailgun__Domain=${MAILGUN_DOMAIN}
+      - Mailgun__FromEmail=${MAILGUN_FROM_EMAIL}
+      - Mailgun__BaseUrl=https://api.eu.mailgun.net/v3
+    networks:
+      - vps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  vps-network:
+    external: true

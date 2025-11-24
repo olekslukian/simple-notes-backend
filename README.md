@@ -169,3 +169,30 @@ dotnet watch run --project src/SimpleNotesApp.API
 # View Swagger documentation
 open https://localhost:7108/swagger
 ```
+
+---
+
+## � Docker
+
+Build and run with Docker:
+
+```bash
+# Build image
+docker build -t simple-notes-api .
+
+# Run container
+docker run -d \
+  -p 8080:8080 \
+  -e ASPNETCORE_ENVIRONMENT=Production \
+  -e ConnectionStrings__DefaultConnection="Server=mssql;..." \
+  simple-notes-api
+```
+
+For production deployment with docker-compose, see `docker-compose.yml`.
+
+---
+
+## 📄 License
+
+MIT
+

@@ -1,3 +1,20 @@
+# IDE
 .vscode
+.vs
+
+# Build outputs
 bin
 obj
+
+# Environment variables (contains secrets!)
+.env
+.env.*
+!.env.example
+
+# User secrets
+**/appsettings.Development.json
+
+# Deployment documentation (private, stored separately)
+INFRASTRUCTURE-SETUP.md
+DEPLOYMENT.md
+QUICKSTART.md
