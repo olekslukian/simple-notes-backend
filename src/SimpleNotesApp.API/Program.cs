@@ -44,12 +44,11 @@ builder.Services.AddCors((options) =>
   });
 
   options.AddPolicy("ProdCors", (corsBuilder) =>
-      {
-        corsBuilder.WithOrigins("https://myproductionsite.com")
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials();
-      });
+  {
+    corsBuilder.AllowAnyOrigin()
+          .AllowAnyMethod()
+          .AllowAnyHeader();
+  });
 });
 
 
@@ -82,7 +81,6 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-  app.UseHttpsRedirection();
   app.UseCors("ProdCors");
 }
 
