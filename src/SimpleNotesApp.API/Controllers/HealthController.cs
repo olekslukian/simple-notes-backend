@@ -11,7 +11,7 @@ public class HealthController : ControllerBase
   {
     return Ok(new
     {
-      status = "healthy",
+      status = "ok",
       timestamp = DateTime.UtcNow,
       service = "SimpleNotesApp.API"
     });
