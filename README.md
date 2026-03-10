@@ -1,26 +1,26 @@
 # SimpleNotesApp Backend
 
-A clean architecture REST API for a note-taking application with JWT authentication and passwordless OTP login.
+A REST API for a note-taking application built with clean architecture. Supports JWT authentication, refresh tokens, and passwordless OTP login via email.
 
 **Android Client**: [simple-notes-android](https://github.com/olekslukian/simple-notes-android)
 
 ## Features
 
-- 📝 **CRUD Operations** - Create, read, update, and delete notes
-- 🔐 **JWT Authentication** - Secure token-based authentication with refresh tokens
-- 📧 **Passwordless Login** - OTP-based authentication via email (Mailgun)
-- 🔒 **Password-based Login** - Traditional email/password authentication
-- 🧪 **Comprehensive Testing** - Unit tests for business logic and API controllers
+- CRUD operations for notes
+- JWT authentication with refresh tokens
+- Passwordless login via OTP email
+- Traditional email/password authentication
+- Unit tests for business logic and API controllers
 
 ## Tech Stack
 
-- **.NET 8.0** - Web API framework
-- **Dapper 2.1.35** - Lightweight ORM for SQL Server stored procedures
-- **Microsoft SQL Server** - Database with stored procedures
-- **JWT Bearer** - Token-based authentication
-- **Mailgun** - Email service for OTP delivery
-- **Swagger/OpenAPI** - Interactive API documentation
-- **xUnit + Moq + FluentAssertions** - Testing framework
+- **.NET 8.0** — Web API framework
+- **Dapper 2.1.35** — Lightweight ORM for SQL Server stored procedures
+- **Microsoft SQL Server** — Database with stored procedures
+- **JWT Bearer** — Token-based authentication
+- **Mailgun** — Email service for OTP delivery
+- **Swagger/OpenAPI** — API documentation
+- **xUnit + Moq + FluentAssertions** — Testing
 
 ## Architecture
 
@@ -37,7 +37,7 @@ tests/
 └── SimpleNotesApp.API.Tests/     # Unit tests for API controllers
 ```
 
-**Dependency Flow**: `API → Core ← Infrastructure`
+Dependency flow: `API → Core ← Infrastructure`
 
 ## Getting Started
 
@@ -75,14 +75,14 @@ dotnet user-secrets set "MailgunSettings:FromName" "Simple Notes App"
 
 ### 3. Database Setup
 
-1. Create database: `NotesAppDb`
-2. Execute SQL scripts from `Stored Procedures/` directory in order:
-   - `spRegistration_Upsert.sql` - User registration
-   - `spCheck_User.sql` - Email verification
-   - `spUser_Auth_Confirmation.sql` - Password authentication
-   - `spUser_getById.sql`, `spUserId_get.sql` - User lookup
-   - `spUser_getByRefToken.sql`, `spUser_RefreshToken_Update.sql` - Token management
-   - `spNote_*.sql` - Notes CRUD operations
+1. Create a database named `NotesAppDb`
+2. Execute SQL scripts from `Stored Procedures/` in order:
+   - `spRegistration_Upsert.sql` — User registration
+   - `spCheck_User.sql` — Email verification
+   - `spUser_Auth_Confirmation.sql` — Password authentication
+   - `spUser_getById.sql`, `spUserId_get.sql` — User lookup
+   - `spUser_getByRefToken.sql`, `spUser_RefreshToken_Update.sql` — Token management
+   - `spNote_*.sql` — Notes CRUD operations
 
 ### 4. Run the Application
 
@@ -91,47 +91,57 @@ dotnet user-secrets set "MailgunSettings:FromName" "Simple Notes App"
 dotnet run --project src/SimpleNotesApp.API
 ```
 
-- **HTTPS**: `https://localhost:7108`
-- **HTTP**: `http://localhost:5108`
-- **Swagger UI**: `https://localhost:7108/swagger` 📖
+- HTTPS: `https://localhost:7108`
+- HTTP: `http://localhost:5108`
+- Swagger UI: `https://localhost:7108/swagger`
 
 ## API Endpoints
 
 ### Authentication
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| `POST` | `/api/auth/register` | Register new user with email/password | ❌ |
-| `POST` | `/api/auth/login` | Login with email/password | ❌ |
-| `POST` | `/api/auth/send-otp-login` | Request OTP for passwordless login | ❌ |
-| `POST` | `/api/auth/verify-email-login` | Verify email and get OTP confirmation | ❌ |
-| `POST` | `/api/auth/send-otp-password` | Request OTP to set password | ✅ |
-| `POST` | `/api/auth/set-password` | Set password using OTP | ✅ |
-| `POST` | `/api/auth/change-password` | Change password (requires old password) | ✅ |
-| `POST` | `/api/auth/refresh-token` | Refresh JWT using refresh token | ❌ |
+
+| Method | Endpoint | Description | Auth required |
+|--------|----------|-------------|---------------|
+| `POST` | `/api/auth/register` | Register with email and password | No |
+| `POST` | `/api/auth/login` | Login with email and password | No |
+| `POST` | `/api/auth/send-otp-login` | Request OTP for passwordless login | No |
+| `POST` | `/api/auth/verify-email-login` | Verify email and complete OTP login | No |
+| `POST` | `/api/auth/send-otp-password` | Request OTP to set a password | Yes |
+| `POST` | `/api/auth/set-password` | Set password using OTP | Yes |
+| `POST` | `/api/auth/change-password` | Change password (requires current password) | Yes |
+| `POST` | `/api/auth/refresh-token` | Refresh JWT using refresh token | No |
 
 ### Notes
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| `GET` | `/api/notes` | Get all user notes | ✅ |
-| `GET` | `/api/notes/{id}` | Get specific note by ID | ✅ |
-| `POST` | `/api/notes` | Create new note | ✅ |
-| `PATCH` | `/api/notes/{id}` | Update note | ✅ |
-| `DELETE` | `/api/notes/{id}` | Delete note | ✅ |
 
-## Quick Test
+| Method | Endpoint | Description | Auth required |
+|--------|----------|-------------|---------------|
+| `GET` | `/api/notes` | Get all notes for the current user | Yes |
+| `GET` | `/api/notes/{id}` | Get a specific note by ID | Yes |
+| `POST` | `/api/notes` | Create a new note | Yes |
+| `PATCH` | `/api/notes/{id}` | Update a note | Yes |
+| `DELETE` | `/api/notes/{id}` | Delete a note | Yes |
+
+## Testing the API
+
+A Postman collection is available in the [Releases](https://github.com/olekslukian/simple-notes-backend/releases) section. Import it into Postman to quickly test all endpoints with pre-configured requests.
+
+The live API is hosted at `https://api-simplenotes.olekslukian.xyz`.
+
+### Register a new user
 
 ```bash
-# Register a new user
-curl -X POST https://localhost:7108/api/auth/register \
+curl -X POST https://api-simplenotes.olekslukian.xyz/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com",
     "password": "Test123!",
     "passwordConfirmation": "Test123!"
   }'
+```
 
-# Login
-curl -X POST https://localhost:7108/api/auth/login \
+### Login
+
+```bash
+curl -X POST https://api-simplenotes.olekslukian.xyz/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com",
@@ -139,13 +149,64 @@ curl -X POST https://localhost:7108/api/auth/login \
   }'
 ```
 
-## 🧪 Testing
+The response includes a `token` and a `refreshToken`. Use the `token` as a Bearer token for authenticated requests.
+
+### Create a note
+
+```bash
+curl -X POST https://api-simplenotes.olekslukian.xyz/api/notes \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <your_token>" \
+  -d '{
+    "title": "My first note",
+    "content": "This is the note content."
+  }'
+```
+
+### Get all notes
+
+```bash
+curl https://api-simplenotes.olekslukian.xyz/api/notes \
+  -H "Authorization: Bearer <your_token>"
+```
+
+### Update a note
+
+```bash
+curl -X PATCH https://api-simplenotes.olekslukian.xyz/api/notes/<note_id> \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <your_token>" \
+  -d '{
+    "title": "Updated title",
+    "content": "Updated content."
+  }'
+```
+
+### Delete a note
+
+```bash
+curl -X DELETE https://api-simplenotes.olekslukian.xyz/api/notes/<note_id> \
+  -H "Authorization: Bearer <your_token>"
+```
+
+### Refresh token
+
+```bash
+curl -X POST https://api-simplenotes.olekslukian.xyz/api/auth/refresh-token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token": "<your_token>",
+    "refreshToken": "<your_refresh_token>"
+  }'
+```
+
+## Running Tests
 
 ```bash
 # Run all tests
 dotnet test
 
-# Run specific test project
+# Run a specific test project
 dotnet test tests/SimpleNotesApp.Core.Tests
 dotnet test tests/SimpleNotesApp.API.Tests
 
@@ -153,11 +214,11 @@ dotnet test tests/SimpleNotesApp.API.Tests
 dotnet test --verbosity normal
 ```
 
-**Test Coverage**:
-- ✅ **Core Tests** (44 tests) - AuthService, NotesService, AuthHelper
-- ✅ **API Tests** (24 tests) - AuthController, NotesController
+Test coverage:
+- Core Tests (44 tests) — AuthService, NotesService, AuthHelper
+- API Tests (24 tests) — AuthController, NotesController
 
-## 🏗️ Development
+## Development
 
 ```bash
 # Build the solution
@@ -165,10 +226,5 @@ dotnet build
 
 # Run with hot reload
 dotnet watch run --project src/SimpleNotesApp.API
-
-# View Swagger documentation
-open https://localhost:7108/swagger
 ```
-
-
 
