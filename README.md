@@ -2,8 +2,6 @@
 
 A REST API for a note-taking application built with clean architecture. Supports JWT authentication, refresh tokens, and passwordless OTP login via email.
 
-**Client App (in progress)**: [simple-notes-client](https://github.com/olekslukian/simple-notes-client)
-
 ## Features
 
 - CRUD operations for notes
